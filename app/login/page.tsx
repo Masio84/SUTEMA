@@ -67,7 +67,7 @@ export default function LoginPage() {
                                         id="email"
                                         type="email"
                                         placeholder="usuario@sutema.com"
-                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950 focus:ring-primary/20"
+                                        className="h-14 rounded-2xl pl-11 border-[#e5e7eb] bg-white text-[#1f2937] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
@@ -82,7 +82,7 @@ export default function LoginPage() {
                                         id="password"
                                         type="password"
                                         placeholder="••••••••"
-                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950 focus:ring-primary/20"
+                                        className="h-14 rounded-2xl pl-11 border-[#e5e7eb] bg-white text-[#1f2937] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required

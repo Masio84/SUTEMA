@@ -1,4 +1,5 @@
 import React from 'react'
+export const dynamic = "force-dynamic"
 import AppLayout from '@/components/layout/AppLayout'
 import DashboardClient from '@/components/dashboard/DashboardClient'
 import { getDashboardStats } from '../actions/workers'
