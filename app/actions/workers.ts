@@ -65,23 +65,84 @@ export async function getWorkerById(id: string) {
     }
 }
 
-export async function getWorkers(search?: string) {
+export async function getWorkers(params: {
+    search?: string;
+    adscripcion?: string;
+    estatus?: string;
+    hijos_menores_12?: boolean;
+    seniority_min?: number;
+    seniority_max?: number;
+    page?: number;
+    perPage?: number;
+    sortCol?: string;
+    sortOrder?: 'asc' | 'desc';
+} = {}) {
+    const {
+        search,
+        adscripcion,
+        estatus,
+        hijos_menores_12,
+        seniority_min,
+        seniority_max,
+        page = 1,
+        perPage = 50,
+        sortCol = 'nombre',
+        sortOrder = 'asc'
+    } = params
+
     const supabase = await createClient()
 
-    let query = supabase.from('trabajadores').select('*')
+    let query = supabase.from('trabajadores').select('*, adscripciones(nombre)', { count: 'exact' })
 
     if (search) {
         query = query.or(`nombre.ilike.%${search}%,apellido_paterno.ilike.%${search}%,curp.ilike.%${search}%`)
     }
 
-    const { data, error } = await query.order('nombre', { ascending: true })
+    if (adscripcion && adscripcion !== 'all') {
+        query = query.eq('adscripcion_id', adscripcion)
+    }
+
+    if (estatus && estatus !== 'all') {
+        query = query.eq('estatus', estatus)
+    }
+
+    if (hijos_menores_12) {
+        query = query.gt('hijos_menores_12', 0)
+    }
+
+    // Seniority filter logic
+    if (seniority_min !== undefined || seniority_max !== undefined) {
+        const today = new Date()
+        if (seniority_min !== undefined) {
+            const minDate = new Date(today.getFullYear() - seniority_min, today.getMonth(), today.getDate())
+            query = query.lte('fecha_ingreso', minDate.toISOString().split('T')[0])
+        }
+        if (seniority_max !== undefined) {
+            const maxDate = new Date(today.getFullYear() - (seniority_max + 1), today.getMonth(), today.getDate())
+            query = query.gte('fecha_ingreso', maxDate.toISOString().split('T')[0])
+        }
+    }
+
+    // Pagination
+    const from = (page - 1) * perPage
+    const to = from + perPage - 1
+    query = query.range(from, to).order(sortCol, { ascending: sortOrder === 'asc' })
+
+    const { data, error, count } = await query
 
     if (error) {
         console.error(error)
-        return []
+        return { data: [], count: 0 }
     }
 
-    return (data || []) as any[]
+    return { data: (data || []) as any[], count: count || 0 }
+}
+
+export async function getAdscripciones() {
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('adscripciones').select('*').order('nombre')
+    if (error) return []
+    return data
 }
 
 export async function deleteWorker(id: string) {
