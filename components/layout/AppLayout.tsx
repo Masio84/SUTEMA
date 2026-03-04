@@ -5,7 +5,7 @@ import { signOut } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Users, UserPlus, FileText, Settings, Search, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, FileText, Settings, Search, LogOut, FileUp } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
     { label: 'Consultas', href: '/consultas', icon: <Search className="h-4 w-4" /> },
     { label: 'Registro de Trabajador', href: '/registro', icon: <UserPlus className="h-4 w-4" /> },
     { label: 'Editar Datos', href: '/editar', icon: <Users className="h-4 w-4" /> },
+    { label: 'Importar Excel', href: '/importar', icon: <FileUp className="h-4 w-4" /> },
     { label: 'Reportes', href: '/reportes', icon: <FileText className="h-4 w-4" /> },
     { label: 'Configuración', href: '/configuracion', icon: <Settings className="h-4 w-4" /> },
 ]

@@ -128,6 +128,17 @@ export async function deleteWorker(id: string) {
     return { success: true }
 }
 
+export async function importWorkers(workers: any[]) {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('trabajadores')
+        .insert(workers)
+
+    if (error) throw new Error(error.message)
+    return { success: true, count: workers.length }
+}
+
 export async function getDashboardStats() {
     const supabase = await createClient()
 
