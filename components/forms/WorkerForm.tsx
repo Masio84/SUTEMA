@@ -14,7 +14,8 @@ import {
     CreditCard,
     CalendarIcon,
     Save,
-    AlertCircle
+    AlertCircle,
+    Loader2
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -45,29 +46,14 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { workerSchema, WorkerFormValues } from "@/lib/validations/worker"
+import { getUnidades } from "@/app/actions/workers"
 
 interface WorkerFormProps {
     initialData?: Partial<WorkerFormValues>
+    adscripciones: any[]
     onSubmit: (data: WorkerFormValues) => void
     isLoading?: boolean
 }
-
-const ADSCRIPCIONES = [
-    "Oficinas Centrales",
-    "Distrito Sanitario 1",
-    "Distrito Sanitario 2",
-    "Distrito Sanitario 3",
-    "Hospital General Tercer Milenio",
-    "Hospital de la Mujer",
-    "LESP",
-    "CETS",
-    "VIH",
-    "UNEME",
-    "SEEM",
-    "Hospital General de Rincón de Romo",
-    "Hospital General de Pabellón de Arteaga",
-    "Hospital General de Calvillo",
-]
 
 const MUNICIPIOS = [
     "Aguascalientes", "Asientos", "Calvillo", "Cosío", "Jesús María",
@@ -75,12 +61,10 @@ const MUNICIPIOS = [
     "Tepezalá", "El Llano", "San Francisco de los Romo"
 ]
 
-const UNIDADES_MOCK = {
-    "Oficinas Centrales": ["Recursos Humanos", "Finanzas", "Sindicato", "Dirección General"],
-    "Distritos": ["Subunidad A", "Subunidad B", "Clínica Local"]
-}
+export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoading }: WorkerFormProps) {
+    const [unidades, setUnidades] = useState<any[]>([])
+    const [isLoadingUnidades, setIsLoadingUnidades] = useState(false)
 
-export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerFormProps) {
     const form = useForm<WorkerFormValues>({
         resolver: zodResolver(workerSchema) as any,
         defaultValues: {
@@ -108,17 +92,36 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
         },
     })
 
-    // Watch adscripcion to enable/disable unidad dropdown
-    const selectedAdscripcion = form.watch("adscripcion_id")
-    const isUnidadEnabled = selectedAdscripcion === "Oficinas Centrales" ||
-        (selectedAdscripcion && selectedAdscripcion.includes("Distrito Sanitario"))
+    const selectedAdscripcionId = form.watch("adscripcion_id")
 
-    // Get units for the selected adscripcion
-    const getUnidades = () => {
-        if (selectedAdscripcion === "Oficinas Centrales") return UNIDADES_MOCK["Oficinas Centrales"]
-        if (selectedAdscripcion && selectedAdscripcion.includes("Distrito Sanitario")) return UNIDADES_MOCK["Distritos"]
-        return []
-    }
+    // Fetch units when selected adscripcion changes
+    useEffect(() => {
+        const fetchUnidades = async () => {
+            if (!selectedAdscripcionId) {
+                setUnidades([])
+                return
+            }
+
+            setIsLoadingUnidades(true)
+            try {
+                const data = await getUnidades(selectedAdscripcionId)
+                setUnidades(data)
+
+                // Reset unit if the current one doesn't belong to the new adscripcion
+                const currentUnidadId = form.getValues("unidad_id")
+                if (currentUnidadId && !data.find(u => u.id === currentUnidadId)) {
+                    form.setValue("unidad_id", "")
+                }
+            } catch (error) {
+                console.error("Error fetching units:", error)
+                setUnidades([])
+            } finally {
+                setIsLoadingUnidades(false)
+            }
+        }
+
+        fetchUnidades()
+    }, [selectedAdscripcionId, form])
 
     const sectionVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -257,15 +260,15 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Adscripción</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Seleccionar adscripción" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {ADSCRIPCIONES.map(ads => (
-                                                    <SelectItem key={ads} value={ads}>{ads}</SelectItem>
+                                                {adscripciones.map(ads => (
+                                                    <SelectItem key={ads.id} value={ads.id}>{ads.nombre}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
@@ -278,20 +281,22 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                 name="unidad_id"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className={cn(!isUnidadEnabled && "opacity-50")}>Dirección/Unidad</FormLabel>
+                                        <FormLabel className={cn(!selectedAdscripcionId && "opacity-50")}>
+                                            Dirección/Unidad {isLoadingUnidades && <Loader2 className="inline ml-2 h-3 w-3 animate-spin" />}
+                                        </FormLabel>
                                         <Select
-                                            disabled={!isUnidadEnabled}
+                                            disabled={!selectedAdscripcionId || unidades.length === 0}
                                             onValueChange={field.onChange}
-                                            defaultValue={field.value}
+                                            value={field.value}
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder={isUnidadEnabled ? "Seleccionar unidad" : "No requiere unidad"} />
+                                                    <SelectValue placeholder={unidades.length > 0 ? "Seleccionar unidad" : "Sin unidades disponibles"} />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {getUnidades().map(un => (
-                                                    <SelectItem key={un} value={un}>{un}</SelectItem>
+                                                {unidades.map(un => (
+                                                    <SelectItem key={un.id} value={un.id}>{un.nombre}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
@@ -311,7 +316,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                                     <Button
                                                         variant={"outline"}
                                                         className={cn(
-                                                            "w-full pl-3 text-left font-normal h-10",
+                                                            "w-full pl-3 text-left font-normal h-10 rounded-xl",
                                                             !field.value && "text-muted-foreground"
                                                         )}
                                                     >
@@ -348,7 +353,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                         <FormLabel>Estatus</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
+                                                <SelectTrigger className="rounded-xl">
                                                     <SelectValue placeholder="Estado actual" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -385,7 +390,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                         <FormItem>
                                             <FormLabel>Calle</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Av. Principal" {...field} />
+                                                <Input className="rounded-xl" placeholder="Av. Principal" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -400,7 +405,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                         <FormItem>
                                             <FormLabel>No. Ext</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="123" {...field} />
+                                                <Input className="rounded-xl" placeholder="123" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -413,7 +418,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                         <FormItem>
                                             <FormLabel>No. Int</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="B" {...field} />
+                                                <Input className="rounded-xl" placeholder="B" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -427,7 +432,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                     <FormItem>
                                         <FormLabel>Colonia</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Fraccionamiento..." {...field} />
+                                            <Input className="rounded-xl" placeholder="Fraccionamiento..." {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -441,7 +446,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                         <FormLabel>Municipio</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
+                                                <SelectTrigger className="rounded-xl">
                                                     <SelectValue placeholder="Seleccionar" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -462,7 +467,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                     <FormItem>
                                         <FormLabel>Teléfono</FormLabel>
                                         <FormControl>
-                                            <Input type="tel" placeholder="4490000000" {...field} />
+                                            <Input className="rounded-xl" type="tel" placeholder="4490000000" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -517,6 +522,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                                         <FormLabel>No. Hijos menores de 12 años</FormLabel>
                                                         <FormControl>
                                                             <Input
+                                                                className="rounded-xl"
                                                                 type="number"
                                                                 min={0}
                                                                 {...field}
@@ -552,7 +558,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                             <FormItem>
                                                 <FormLabel>Sección INE</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="0000" {...field} />
+                                                    <Input className="rounded-xl" placeholder="0000" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -565,7 +571,7 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                                             <FormItem>
                                                 <FormLabel>Clave Elector</FormLabel>
                                                 <FormControl>
-                                                    <Input className="uppercase" placeholder="ABCD5678..." {...field} />
+                                                    <Input className="rounded-xl uppercase" placeholder="ABCD5678..." {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -583,10 +589,10 @@ export default function WorkerForm({ initialData, onSubmit, isLoading }: WorkerF
                         size="lg"
                         type="submit"
                         disabled={isLoading}
-                        className="h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all gap-2 text-base"
+                        className="h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all gap-2 text-base font-bold"
                     >
                         {isLoading ? (
-                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                            <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
                             <Save className="h-5 w-5" />
                         )}

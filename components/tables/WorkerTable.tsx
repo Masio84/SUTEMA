@@ -33,6 +33,7 @@ export interface Worker {
     adscripcion_id: string
     adscripciones?: { nombre: string }
     unidad_id?: string
+    unidades?: { nombre: string }
     estatus: string
     fecha_ingreso: string
 }
@@ -126,7 +127,7 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium">{worker.adscripciones?.nombre || worker.adscripcion_id}</span>
-                                            {worker.unidad_id && <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">{worker.unidad_id}</span>}
+                                            {worker.unidades?.nombre && <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">{worker.unidades.nombre}</span>}
                                         </div>
                                     </TableCell>
                                     <TableCell>

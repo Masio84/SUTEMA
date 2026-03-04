@@ -3,34 +3,40 @@
 import React, { useEffect, useState, use } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import WorkerForm from '@/components/forms/WorkerForm'
-import { getWorkerById, updateWorker } from '../../actions/workers'
+import { getWorkerById, updateWorker, getAdscripciones } from '../../actions/workers'
 import { WorkerFormValues } from '@/lib/validations/worker'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function EditarPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
     const [worker, setWorker] = useState<any>(null)
+    const [adscripciones, setAdscripciones] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isUpdating, setIsUpdating] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
         async function load() {
-            const data = await getWorkerById(id)
-            if (data) {
-                setWorker(data)
+            const [workerData, adscData] = await Promise.all([
+                getWorkerById(id),
+                getAdscripciones()
+            ])
+
+            if (workerData) {
+                setWorker(workerData)
             } else {
                 toast.error("No se encontró el trabajador")
                 router.push('/consultas')
             }
+            setAdscripciones(adscData)
             setIsLoading(false)
         }
         load()
-    }, [id])
+    }, [id, router])
 
     const onSubmit = async (values: WorkerFormValues) => {
         setIsUpdating(true)
@@ -52,12 +58,9 @@ export default function EditarPage({ params }: { params: Promise<{ id: string }>
     if (isLoading) {
         return (
             <AppLayout title="Editar" subtitle="Cargando...">
-                <div className="flex items-center justify-center min-h-[50vh]">
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 1 }}
-                        className="w-10 h-10 border-4 border-zinc-200 border-t-zinc-800 rounded-full"
-                    />
+                <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+                    <Loader2 className="h-10 w-10 animate-spin text-zinc-300" />
+                    <p className="text-zinc-500 font-medium">Obteniendo información...</p>
                 </div>
             </AppLayout>
         )
@@ -74,6 +77,7 @@ export default function EditarPage({ params }: { params: Promise<{ id: string }>
                     <ArrowLeft className="h-4 w-4" /> Regresar
                 </Button>
                 <WorkerForm
+                    adscripciones={adscripciones}
                     onSubmit={onSubmit}
                     isLoading={isUpdating}
                     initialData={{
