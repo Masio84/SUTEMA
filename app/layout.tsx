@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  title: "SUTEMA - Gestión de Trabajadores",
-  description: "Sistema de gestión del Sindicato Único de Trabajadores del Estado y Municipios de Aguascalientes",
+  title: "SUTEMA | Sistema de Gestión Sindical",
+  description: "Sistema avanzado para la gestión de trabajadores sindicalizados de la ISSEA.",
 };
 
 export default function RootLayout({
@@ -23,11 +17,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased text-zinc-900 dark:text-zinc-50 dark:bg-zinc-950`}>
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

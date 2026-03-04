@@ -1,129 +1,124 @@
 'use client'
 
-import { useState } from 'react'
-import { login } from '../actions/auth'
-import { Button } from '@/components/ui/button'
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card'
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { motion } from 'framer-motion'
-import { Lock, User, Info } from 'lucide-react'
+import { Loader2, Lock, User } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-    const [error, setError] = useState<string | null>(null)
-    const [loading, setLoading] = useState(false)
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
+    const supabase = createClient()
 
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault()
-        setLoading(true)
-        setError(null)
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
 
-        const formData = new FormData(event.currentTarget)
-        const result = await login(formData)
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        })
 
-        if (result?.error) {
-            setError(result.error)
-            setLoading(false)
+        if (error) {
+            toast.error("Credenciales inválidas. " + error.message)
+            setIsLoading(false)
+        } else {
+            toast.success("Bienvenido al sistema")
+            router.push('/dashboard')
         }
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-4 font-sans ring-zinc-50">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="w-full max-w-md"
+                transition={{ duration: 0.4, ease: "circOut" }}
+                className="w-full max-w-[420px]"
             >
-                {/* Logo / Title */}
-                <div className="mb-8 text-center">
-                    <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 drop-shadow-sm">
-                        SUTEMA
-                    </h1>
-                    <p className="mt-2 text-zinc-500 dark:text-zinc-400">Sistema de Gestión de Trabajadores</p>
+                <div className="flex flex-col items-center mb-10 text-center">
+                    <div className="w-16 h-16 bg-zinc-900 dark:bg-zinc-100 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-zinc-200 dark:shadow-none">
+                        <span className="text-white dark:text-zinc-950 font-black text-2xl">S</span>
+                    </div>
+                    <h1 className="text-4xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight">SUTEMA</h1>
+                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mt-2">Sistema de Gestión Sindical</p>
                 </div>
 
-                <Card className="border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden glass-morphism">
-                    <CardHeader className="space-y-1 pb-8 pt-8">
-                        <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión</CardTitle>
-                        <CardDescription className="text-center text-zinc-500">
-                            Ingresa tus credenciales para acceder al sistema
-                        </CardDescription>
+                <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl">
+                    <CardHeader className="pt-10 px-8">
+                        <CardTitle className="text-2xl font-black">Iniciar Sesión</CardTitle>
+                        <CardDescription className="font-medium">Ingresa tus credenciales para continuar</CardDescription>
                     </CardHeader>
-
-                    <form onSubmit={handleSubmit}>
-                        <CardContent className="space-y-6">
-                            {error && (
-                                <div className="p-3 text-sm font-medium text-red-500 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-100 dark:border-red-900 animate-in fade-in zoom-in duration-200">
-                                    {error}
-                                </div>
-                            )}
-
-                            <div className="space-y-2 group">
-                                <Label htmlFor="usuario" className="text-sm font-semibold transition-colors group-focus-within:text-foreground">Usuario</Label>
+                    <CardContent className="px-8 pt-6">
+                        <form onSubmit={handleLogin} className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-zinc-500 ml-1">Usuario / Email</Label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-3 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                     <Input
-                                        id="usuario"
-                                        name="usuario"
-                                        placeholder="correo@ejemplo.com"
+                                        id="email"
+                                        type="email"
+                                        placeholder="usuario@sutema.com"
+                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-zinc-400/20"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         required
-                                        className="pl-10 h-11 border-zinc-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary/20 transition-all"
                                     />
                                 </div>
                             </div>
-
-                            <div className="space-y-2 group">
-                                <Label htmlFor="password" title="Contraseña" className="text-sm font-semibold transition-colors group-focus-within:text-foreground">Password</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-zinc-500 ml-1">Contraseña</Label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                     <Input
                                         id="password"
-                                        name="password"
                                         type="password"
+                                        placeholder="••••••••"
+                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-zinc-400/20"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                         required
-                                        className="pl-10 h-11 border-zinc-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary/20 transition-all"
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-4 text-sm text-zinc-500 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 transition-all hover:bg-zinc-100 dark:hover:bg-zinc-900">
-                                <div className="flex items-start gap-3">
-                                    <Info className="h-4 w-4 mt-0.5 text-zinc-500 shrink-0" />
-                                    <p className="leading-relaxed">
-                                        ¿Olvidó su contraseña? <br />
-                                        <span className="font-semibold text-zinc-600 dark:text-zinc-300">
-                                            Comuníquese con el administrador del sistema para restablecer su contraseña.
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-
-                        <CardFooter className="pb-8 pt-2">
-                            <Button type="submit" disabled={loading} className="w-full h-11 text-base font-bold transition-all hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-primary/20">
-                                {loading ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                                        Accediendo...
-                                    </div>
+                            <Button
+                                type="submit"
+                                className="w-full h-14 rounded-2xl bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-950 font-bold text-lg hover:scale-[0.98] active:scale-95 transition-all shadow-lg shadow-zinc-200 dark:shadow-none"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        Entrando...
+                                    </>
                                 ) : (
-                                    'Entrar al sistema'
+                                    "Ingresar"
                                 )}
                             </Button>
-                        </CardFooter>
-                    </form>
+                        </form>
+                    </CardContent>
+                    <CardFooter className="px-8 pb-10 flex flex-col items-center">
+                        <button
+                            type="button"
+                            className="text-xs font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors uppercase tracking-wider"
+                            onClick={() => toast.info("Comuníquese con el administrador del sistema para restablecer su contraseña.")}
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
+                    </CardFooter>
                 </Card>
 
-                <p className="mt-8 text-center text-xs text-zinc-400 uppercase tracking-widest font-medium">
-                    © {new Date().getFullYear()} SUTEMA - ISSEA
+                <p className="text-center mt-10 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                    © 2024 SUTEMA ISSEA. Todos los derechos reservados.
                 </p>
             </motion.div>
         </div>
