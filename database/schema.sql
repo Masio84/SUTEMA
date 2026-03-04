@@ -64,7 +64,8 @@ CREATE TABLE IF NOT EXISTS trabajadores (
 CREATE TABLE IF NOT EXISTS usuarios_sistema (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     nombre_completo TEXT,
-    rol TEXT NOT NULL DEFAULT 'viewer' CHECK (rol IN ('admin', 'editor', 'viewer')),
+    email TEXT,
+    rol TEXT NOT NULL DEFAULT 'viewer' CHECK (rol IN ('admin', 'capturista', 'editor', 'viewer')),
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMPTZ DEFAULT NOW(),
     fecha_actualizacion TIMESTAMPTZ DEFAULT NOW()
