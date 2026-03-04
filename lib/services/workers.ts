@@ -33,7 +33,7 @@ export async function getWorkersOverview(params: WorkerFilters = {}) {
     let query = supabase.from('trabajadores').select('*, adscripciones(nombre), unidades(nombre)', { count: 'exact' })
 
     if (search) {
-        query = query.or(`nombre.ilike.%${search}%,primer_apellido.ilike.%${search}%,segundo_apellido.ilike.%${search}%,curp.ilike.%${search}%,telefono.ilike.%${search}%,municipio.ilike.%${search}%,seccion_ine.ilike.%${search}%`)
+        query = query.or(`nombre.ilike.%${search}%,apellido_paterno.ilike.%${search}%,apellido_materno.ilike.%${search}%,curp.ilike.%${search}%,telefono.ilike.%${search}%,municipio.ilike.%${search}%,seccion_ine.ilike.%${search}%`)
     }
 
     if (adscripcion && adscripcion !== 'all') {

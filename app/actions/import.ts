@@ -74,15 +74,15 @@ export async function importFromExcel(rows: any[]) {
             const cantidadHijos = parseInt(getVal('CANTIDAD DE HIJOS')) || 0
             const tieneHijos = (tieneHijosVal === 'SI') || (cantidadHijos > 0)
 
-            // Mapping ESTATUS or default to Activo
+            // Intelligent ESTATUS mapping or default to 'Activo'
             let estatus = 'Activo'
             const rawEstatus = getVal('ESTATUS')
             if (rawEstatus) {
-                const rowEstatus = rawEstatus.toString().trim()
-                const normalized = rowEstatus.charAt(0).toUpperCase() + rowEstatus.slice(1).toLowerCase()
-                if (['Activo', 'Inactivo', 'Baja', 'Jubilado'].includes(normalized)) {
-                    estatus = normalized
-                }
+                const s = rawEstatus.toString().trim().toLowerCase()
+                if (s.includes('jubila')) estatus = 'Jubilado'
+                else if (s.includes('inactiv')) estatus = 'Inactivo'
+                else if (s.includes('baj')) estatus = 'Baja'
+                else estatus = 'Activo'
             }
 
             return {
@@ -95,7 +95,7 @@ export async function importFromExcel(rows: any[]) {
                 telefono: getVal('TELEFONO')?.toString().trim() || '',
                 adscripcion_id: adscId,
                 unidad_id: null,
-                fecha_ingreso: new Date().toISOString(),
+                fecha_ingreso: new Date().toISOString().split('T')[0],
                 tiene_hijos: tieneHijos,
                 hijos_menores_12: 0,
                 calle: getVal('CALLE')?.toString().trim() || '',
