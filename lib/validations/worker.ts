@@ -14,7 +14,7 @@ export const workerSchema = z.object({
     adscripcion_id: z.string().min(1, "Adscripción es requerida"),
     unidad_id: z.string().optional().or(z.literal("")),
     fecha_ingreso: z.date({
-        required_error: "Fecha de ingreso es requerida",
+        message: "Fecha de ingreso es requerida",
     }),
     estatus: z.enum(["Activo", "Inactivo", "Baja", "Jubilado"]),
 
