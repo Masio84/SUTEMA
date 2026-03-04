@@ -75,7 +75,7 @@ export default function ConsultasPage() {
     }, [search, selectedAdscripcion, selectedEstatus, hasHijos, minSeniority, maxSeniority, page, sortCol, sortOrder])
 
     useEffect(() => {
-        const timer = setTimeout(fetchContent, 500)
+        const timer = setTimeout(fetchContent, 300)
         return () => clearTimeout(timer)
     }, [fetchContent])
 
@@ -157,7 +157,7 @@ export default function ConsultasPage() {
                     <div className="relative w-full lg:max-w-md">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                         <Input
-                            placeholder="Buscar por nombre, CURP..."
+                            placeholder="Buscar trabajador por nombre, CURP, teléfono, municipio o sección..."
                             className="pl-11 h-12 rounded-2xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 focus:ring-zinc-400/20"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
@@ -303,6 +303,7 @@ export default function ConsultasPage() {
                         onPageChange={(p) => setPage(p)}
                         sortCol={sortCol}
                         sortOrder={sortOrder}
+                        searchTerm={search}
                         onSort={(col) => {
                             if (sortCol === col) {
                                 setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')

@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { MoreHorizontal, Edit, Trash, Download, FileSpreadsheet, FileText, Printer, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react'
+import { Search, MoreHorizontal, Edit, Trash, Download, FileSpreadsheet, FileText, Printer, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 
@@ -47,10 +47,29 @@ interface WorkerTableProps {
     onSort: (col: string) => void
     sortCol: string
     sortOrder: 'asc' | 'desc'
+    searchTerm?: string
 }
 
-export default function WorkerTable({ workers, onDelete, onPageChange, currentPage, totalPages, onSort, sortCol, sortOrder }: WorkerTableProps) {
+export default function WorkerTable({ workers, onDelete, onPageChange, currentPage, totalPages, onSort, sortCol, sortOrder, searchTerm = '' }: WorkerTableProps) {
     const router = useRouter()
+
+    const highlightText = (text: string | undefined | null) => {
+        if (!text) return ''
+        if (!searchTerm.trim()) return text
+
+        const parts = text.toString().split(new RegExp(`(${searchTerm})`, 'gi'))
+        return (
+            <span>
+                {parts.map((part, i) => (
+                    part.toLowerCase() === searchTerm.toLowerCase() ? (
+                        <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 text-black dark:text-white rounded-sm px-0.5">{part}</mark>
+                    ) : (
+                        part
+                    )
+                ))}
+            </span>
+        )
+    }
 
     const getEstatusBadge = (estatus: string) => {
         switch (estatus) {
@@ -105,7 +124,11 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                         {workers.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-48 text-center text-zinc-500">
-                                    No se encontraron trabajadores con los filtros aplicados.
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Search className="h-8 w-8 opacity-20" />
+                                        <p className="font-bold">No se encontraron trabajadores.</p>
+                                        <p className="text-xs">Intenta ajustar los filtros o el término de búsqueda.</p>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -119,15 +142,17 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                 >
                                     <TableCell className="py-4 px-6">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-zinc-900 dark:text-zinc-50">{worker.nombre} {worker.apellido_paterno}</span>
-                                            <span className="text-xs text-zinc-500">{worker.apellido_materno || ''}</span>
+                                            <span className="font-bold text-zinc-900 dark:text-zinc-50">
+                                                {highlightText(worker.nombre)} {highlightText(worker.apellido_paterno)}
+                                            </span>
+                                            <span className="text-xs text-zinc-500">{highlightText(worker.apellido_materno) || ''}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-mono text-xs uppercase tracking-wider">{worker.curp}</TableCell>
+                                    <TableCell className="font-mono text-xs uppercase tracking-wider">{highlightText(worker.curp)}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="text-sm font-medium">{worker.adscripciones?.nombre || worker.adscripcion_id}</span>
-                                            {worker.unidades?.nombre && <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">{worker.unidades.nombre}</span>}
+                                            <span className="text-sm font-medium">{highlightText(worker.adscripciones?.nombre || worker.adscripcion_id)}</span>
+                                            {worker.unidades?.nombre && <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">{highlightText(worker.unidades.nombre)}</span>}
                                         </div>
                                     </TableCell>
                                     <TableCell>
