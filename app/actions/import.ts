@@ -75,15 +75,18 @@ export async function importFromExcel(rows: any[]) {
             const tieneHijos = (tieneHijosVal === 'SI') || (cantidadHijos > 0)
 
             // Intelligent ESTATUS mapping or default to 'Activo'
+            // DB Constraint: trabajadores_estatus_check allows only "Activo" or "Jubilado"
             let estatus = 'Activo'
             const rawEstatus = getVal('ESTATUS')
             if (rawEstatus) {
                 const s = rawEstatus.toString().trim().toLowerCase()
-                if (s.includes('jubila')) estatus = 'Jubilado'
-                else if (s.includes('inactiv')) estatus = 'Inactivo'
-                else if (s.includes('baj')) estatus = 'Baja'
-                else estatus = 'Activo'
+                if (s.includes('jubil')) {
+                    estatus = 'Jubilado'
+                } else {
+                    estatus = 'Activo'
+                }
             }
+            console.log("Worker estatus:", estatus)
 
             return {
                 nombre: getVal('NOMBRE').toString().trim(),
