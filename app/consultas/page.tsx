@@ -153,7 +153,7 @@ export default function ConsultasPage() {
         <AppLayout title="Consultas" subtitle="Gestión Avanzada de Trabajadores">
             <div className="space-y-6">
                 {/* Top bar */}
-                <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white dark:bg-black p-6 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
                     <div className="relative w-full lg:max-w-md">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                         <Input
@@ -203,7 +203,7 @@ export default function ConsultasPage() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="bg-white dark:bg-zinc-950 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-900 shadow-inner space-y-8">
+                            <div className="bg-card p-8 rounded-[2rem] border border-border shadow-inner space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                                     <div className="space-y-3">
                                         <Label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Adscripción</Label>
@@ -286,7 +286,7 @@ export default function ConsultasPage() {
 
                 {/* Results Area */}
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center h-80 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm rounded-[3rem] border border-zinc-100 dark:border-zinc-900">
+                    <div className="flex flex-col items-center justify-center h-80 bg-card/50 backdrop-blur-sm rounded-[3rem] border border-border">
                         <motion.div
                             animate={{ rotate: 360 }}
                             transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}

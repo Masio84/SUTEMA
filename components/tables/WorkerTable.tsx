@@ -91,7 +91,7 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
         <div className="space-y-4">
             <div id="workers-print-area" className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-zinc-50/50 dark:bg-zinc-900/50">
                         <TableRow className="hover:bg-transparent border-zinc-100 dark:border-zinc-900">
                             <Header label="Nombre Completo" col="nombre" />
                             <Header label="CURP" col="curp" />

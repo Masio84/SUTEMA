@@ -136,12 +136,12 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                 <motion.div variants={sectionVariants} initial="hidden" animate="visible">
                     <Card className="border-none shadow-none bg-transparent">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
                                 <User className="h-5 w-5" />
                             </div>
                             <h3 className="text-xl font-bold tracking-tight">Información Personal</h3>
                         </div>
-                        <CardContent className="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 shadow-sm">
+                        <CardContent className="p-6 bg-card rounded-3xl border border-border grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 shadow-sm">
                             <FormField
                                 control={form.control}
                                 name="nombre"
@@ -248,12 +248,12 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                 <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
                     <Card className="border-none shadow-none bg-transparent">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <div className="p-2.5 rounded-2xl bg-primary/20 text-primary">
                                 <Briefcase className="h-5 w-5" />
                             </div>
                             <h3 className="text-xl font-bold tracking-tight">Información Laboral</h3>
                         </div>
-                        <CardContent className="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 grid grid-cols-1 md:grid-cols-2 gap-6 shadow-sm">
+                        <CardContent className="p-6 bg-card rounded-3xl border border-border grid grid-cols-1 md:grid-cols-2 gap-6 shadow-sm">
                             <FormField
                                 control={form.control}
                                 name="adscripcion_id"
@@ -376,12 +376,12 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                 <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
                     <Card className="border-none shadow-none bg-transparent">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                            <div className="p-2.5 rounded-2xl bg-accent text-accent-foreground">
                                 <Home className="h-5 w-5" />
                             </div>
                             <h3 className="text-xl font-bold tracking-tight">Dirección</h3>
                         </div>
-                        <CardContent className="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 grid grid-cols-1 md:grid-cols-3 gap-6 shadow-sm">
+                        <CardContent className="p-6 bg-card rounded-3xl border border-border grid grid-cols-1 md:grid-cols-3 gap-6 shadow-sm">
                             <div className="md:col-span-2">
                                 <FormField
                                     control={form.control}
@@ -483,12 +483,12 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                     <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.3 }}>
                         <Card className="border-none shadow-none bg-transparent">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
                                     <Users className="h-5 w-5" />
                                 </div>
                                 <h3 className="text-xl font-bold tracking-tight">Información Familiar</h3>
                             </div>
-                            <CardContent className="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm min-h-[160px]">
+                            <CardContent className="p-6 bg-card rounded-3xl border border-border space-y-6 shadow-sm min-h-[160px]">
                                 <FormField
                                     control={form.control}
                                     name="tiene_hijos"
@@ -544,12 +544,12 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                     <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.4 }}>
                         <Card className="border-none shadow-none bg-transparent">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                                <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
                                     <CreditCard className="h-5 w-5" />
                                 </div>
                                 <h3 className="text-xl font-bold tracking-tight">Datos Electorales</h3>
                             </div>
-                            <CardContent className="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 grid grid-cols-1 gap-6 shadow-sm min-h-[160px]">
+                            <CardContent className="p-6 bg-card rounded-3xl border border-border grid grid-cols-1 gap-6 shadow-sm min-h-[160px]">
                                 <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}

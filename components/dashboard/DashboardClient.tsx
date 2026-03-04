@@ -37,7 +37,7 @@ interface DashboardClientProps {
     }
 }
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#475569', '#f97316', '#a855f7']
+const COLORS = ['#6B8F71', '#4C6A56', '#8FBF9A', '#A3C2A9', '#5D7A66', '#3D5545', '#7DA185', '#B5D1BC', '#435D4C', '#2E4034']
 
 export default function DashboardClient({ stats }: DashboardClientProps) {
     const container = {
@@ -91,12 +91,12 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <motion.div variants={item}>
-                    <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
+                    <Card className="bg-card border-border shadow-sm overflow-hidden">
                         <CardHeader className="pb-2 border-b border-zinc-50 dark:border-zinc-900 mx-6 px-0 pt-8">
                             <div className="flex justify-between items-center">
                                 <div>
                                     <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <BarChart2 className="h-5 w-5 text-indigo-500" /> Distribución por Adscripción
+                                        <BarChart2 className="h-5 w-5 text-primary" /> Distribución por Adscripción
                                     </CardTitle>
                                     <CardDescription>Conteo de trabajadores por cada área principal</CardDescription>
                                 </div>
@@ -146,10 +146,10 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                 </motion.div>
 
                 <motion.div variants={item}>
-                    <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
+                    <Card className="bg-card border-border shadow-sm overflow-hidden">
                         <CardHeader className="pb-2 border-b border-zinc-50 dark:border-zinc-900 mx-6 px-0 pt-8">
                             <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                <PieChartIcon className="h-5 w-5 text-emerald-500" /> Resumen General
+                                <PieChartIcon className="h-5 w-5 text-primary" /> Resumen General
                             </CardTitle>
                             <CardDescription>Proporción de estatus laboral</CardDescription>
                         </CardHeader>
@@ -168,8 +168,8 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
-                                            <Cell fill="#10b981" />
-                                            <Cell fill="#f59e0b" />
+                                            <Cell fill="#6B8F71" />
+                                            <Cell fill="#8FBF9A" />
                                             <Cell fill="#e2e8f0" />
                                         </Pie>
                                         <Tooltip />
@@ -178,12 +178,12 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                             </div>
                             <div className="grid grid-cols-3 gap-6 w-full mt-4">
                                 <div className="flex flex-col items-center">
-                                    <div className="w-3 h-3 rounded-full bg-emerald-500 mb-2"></div>
+                                    <div className="w-3 h-3 rounded-full bg-[#6B8F71] mb-2"></div>
                                     <span className="text-[10px] font-bold text-zinc-500 uppercase">Activos</span>
                                     <span className="text-lg font-black">{Math.round((stats.activos / stats.total) * 100) || 0}%</span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <div className="w-3 h-3 rounded-full bg-amber-500 mb-2"></div>
+                                    <div className="w-3 h-3 rounded-full bg-[#8FBF9A] mb-2"></div>
                                     <span className="text-[10px] font-bold text-zinc-500 uppercase">Jubilados</span>
                                     <span className="text-lg font-black">{Math.round((stats.jubilados / stats.total) * 100) || 0}%</span>
                                 </div>

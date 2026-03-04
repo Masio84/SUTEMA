@@ -37,37 +37,37 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: "circOut" }}
-                className="w-full max-w-[420px]"
+                className="w-full max-w-[420px] relative z-10"
             >
                 <div className="flex flex-col items-center mb-10 text-center">
-                    <div className="w-16 h-16 bg-zinc-900 dark:bg-zinc-100 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-zinc-200 dark:shadow-none">
-                        <span className="text-white dark:text-zinc-950 font-black text-2xl">S</span>
+                    <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-primary/20">
+                        <span className="text-white font-black text-2xl">S</span>
                     </div>
-                    <h1 className="text-4xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight">SUTEMA</h1>
-                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mt-2">Sistema de Gestión Sindical</p>
+                    <h1 className="text-4xl font-black text-foreground tracking-tight">SUTEMA</h1>
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-2">Sistema de Gestión Sindical</p>
                 </div>
 
-                <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl">
+                <Card className="rounded-[2.5rem] border-white/50 bg-white/70 backdrop-blur-xl shadow-2xl overflow-hidden">
                     <CardHeader className="pt-10 px-8">
-                        <CardTitle className="text-2xl font-black">Iniciar Sesión</CardTitle>
-                        <CardDescription className="font-medium">Ingresa tus credenciales para continuar</CardDescription>
+                        <CardTitle className="text-2xl font-black text-foreground">Iniciar Sesión</CardTitle>
+                        <CardDescription className="font-medium text-muted-foreground">Ingresa tus credenciales para continuar</CardDescription>
                     </CardHeader>
                     <CardContent className="px-8 pt-6">
                         <form onSubmit={handleLogin} className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-zinc-500 ml-1">Usuario / Email</Label>
+                                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Usuario / Email</Label>
                                 <div className="relative">
                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                     <Input
                                         id="email"
                                         type="email"
                                         placeholder="usuario@sutema.com"
-                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-zinc-400/20"
+                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950 focus:ring-primary/20"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
@@ -75,14 +75,14 @@ export default function LoginPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-zinc-500 ml-1">Contraseña</Label>
+                                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Contraseña</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                     <Input
                                         id="password"
                                         type="password"
                                         placeholder="••••••••"
-                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-zinc-400/20"
+                                        className="h-14 rounded-2xl pl-11 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950 focus:ring-primary/20"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
                             <Button
                                 type="submit"
-                                className="w-full h-14 rounded-2xl bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-950 font-bold text-lg hover:scale-[0.98] active:scale-95 transition-all shadow-lg shadow-zinc-200 dark:shadow-none"
+                                className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-lg hover:scale-[0.98] active:scale-95 transition-all shadow-lg shadow-primary/20"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
@@ -109,7 +109,7 @@ export default function LoginPage() {
                     <CardFooter className="px-8 pb-10 flex flex-col items-center">
                         <button
                             type="button"
-                            className="text-xs font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors uppercase tracking-wider"
+                            className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
                             onClick={() => toast.info("Comuníquese con el administrador del sistema para restablecer su contraseña.")}
                         >
                             ¿Olvidaste tu contraseña?
