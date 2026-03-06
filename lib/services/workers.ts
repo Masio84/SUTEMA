@@ -159,29 +159,63 @@ export async function importWorkers(workers: any[]) {
 export async function getDashboardStats() {
     const supabase = await createClient()
 
-    const queries = [
+    // Fetch summary counts
+    const [totalRes, activosRes, jubiladosRes, conHijosRes] = await Promise.all([
         supabase.from('trabajadores').select('*', { count: 'exact', head: true }),
         supabase.from('trabajadores').select('*', { count: 'exact', head: true }).eq('estatus', 'activo'),
         supabase.from('trabajadores').select('*', { count: 'exact', head: true }).eq('estatus', 'jubilado'),
-        supabase.from('trabajadores').select('*', { count: 'exact', head: true }).gt('hijos_menores_12', 0),
-        supabase.from('adscripciones').select('nombre, trabajadores(id)')
-    ]
+        supabase.from('trabajadores').select('*', { count: 'exact', head: true }).eq('tiene_hijos', true),
+    ])
 
-    const [totalRes, activosRes, jubiladosRes, conHijosRes, adscRes] = await Promise.all(queries)
+    // Fetch ALL workers with the fields we need for per-adscripcion breakdown
+    const { data: allWorkers } = await supabase
+        .from('trabajadores')
+        .select('adscripcion_id, estatus, tiene_hijos, curp, clave_elector, sexo, telefono, colonia, calle, numero_exterior, municipio, seccion_ine, estado_civil, fecha_nacimiento, adscripciones(nombre)')
+
+    // Fetch adscripciones for naming
+    const { data: adscData } = await supabase.from('adscripciones').select('id, nombre').order('nombre')
+
+    // ── Build per-adscripcion stats ──────────────────────────────────────────
+    const REQUIRED = ['curp', 'clave_elector', 'sexo', 'telefono', 'colonia', 'calle', 'numero_exterior', 'municipio', 'seccion_ine', 'estado_civil', 'fecha_nacimiento'] as const
+
+    const adscMap: Record<number, {
+        name: string; total: number; activos: number; jubilados: number;
+        inactivos: number; bajas: number; conHijos: number; incompletos: number
+    }> = {}
+
+    // Init buckets from the adscripciones list
+    for (const a of (adscData || [])) {
+        adscMap[a.id] = { name: a.nombre, total: 0, activos: 0, jubilados: 0, inactivos: 0, bajas: 0, conHijos: 0, incompletos: 0 }
+    }
+
+    for (const w of (allWorkers || []) as any[]) {
+        const adscId = w.adscripcion_id
+        if (!adscMap[adscId]) continue
+
+        const bucket = adscMap[adscId]
+        bucket.total++
+        if (w.estatus === 'activo') bucket.activos++
+        if (w.estatus === 'jubilado') bucket.jubilados++
+        if (w.estatus === 'inactivo') bucket.inactivos++
+        if (w.estatus === 'baja') bucket.bajas++
+        if (w.tiene_hijos) bucket.conHijos++
+
+        const isIncomplete = REQUIRED.some(f => !w[f] || w[f] === '')
+        if (isIncomplete) bucket.incompletos++
+    }
+
+    const adscDetailed = Object.values(adscMap).filter(a => a.total > 0)
+    const adscDistrib = adscDetailed.map(a => ({ name: a.name, count: a.total }))
 
     return {
         total: totalRes.count || 0,
         activos: activosRes.count || 0,
         jubilados: jubiladosRes.count || 0,
         conHijos: conHijosRes.count || 0,
-        stats: {
-            adscDistrib: (adscRes.data as any[])?.map(a => ({
-                name: a.nombre,
-                count: a.trabajadores?.length || 0
-            })) || []
-        }
+        stats: { adscDistrib, adscDetailed }
     }
 }
+
 
 // Required fields for a "complete" record (num_interior is optional)
 const REQUIRED_FIELDS = [
