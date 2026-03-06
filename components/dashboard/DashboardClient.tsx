@@ -4,9 +4,8 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-    Users, UserCheck, UserMinus, Baby, BarChart2,
+    Users, UserCheck, Baby, BarChart2,
     PieChart as PieChartIcon, AlertTriangle, ArrowRight, CheckCircle2,
-    TrendingDown, Activity
 } from 'lucide-react'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -47,7 +46,6 @@ interface DashboardClientProps {
     stats: {
         total: number
         activos: number
-        jubilados: number
         conHijos: number
         stats: {
             adscDistrib: { name: string; count: number }[]
@@ -121,7 +119,6 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
     const metricCards = [
         { title: "Total Registrados", value: stats.total, icon: Users, color: "text-primary-900 dark:text-white" },
         { title: "Activos", value: stats.activos, icon: UserCheck, color: "text-primary-800 dark:text-primary-400" },
-        { title: "Jubilados", value: stats.jubilados, icon: UserMinus, color: "text-primary-700 dark:text-primary-500" },
         { title: "Con Hijos < 12", value: stats.conHijos, icon: Baby, color: "text-primary-600 dark:text-primary-200" },
         {
             title: "Incompletos", value: incompleteCount, icon: AlertTriangle,

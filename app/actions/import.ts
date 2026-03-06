@@ -144,6 +144,7 @@ export async function importFromExcel(rows: any[]) {
         let duplicates = 0
         let validationSkipped = 0
         const total = rows.length
+        const invalidDetails: { fila: number; nombre: string; curp: string; motivo: string }[] = []
 
         // 3. Process rows
         const validWorkers = rows.map((row, index) => {
@@ -168,9 +169,20 @@ export async function importFromExcel(rows: any[]) {
             // ── Mandatory field validation ─────────────────────
             const rawNombre = getVal('NOMBRE')?.toString().trim()
             if (!rawNombre || !curp || !adscId) {
-                if (rawArea && !adscId) {
-                    console.warn(`[Row ${index + 1}] Area "${rawArea}" → "${officialName}" no encontrada en DB.`)
+                // Build human-readable reason
+                const reasons: string[] = []
+                if (!rawNombre) reasons.push('Nombre vacío')
+                if (!curp) reasons.push('CURP vacío o faltante')
+                if (!adscId) {
+                    if (!rawArea) reasons.push('Área/Dependencia no especificada')
+                    else reasons.push(`Área "${rawArea}" no reconocida${officialName ? ` (se detectó como "${officialName}" pero no existe en la BD)` : ''}`)
                 }
+                invalidDetails.push({
+                    fila: index + 1,
+                    nombre: rawNombre || '(sin nombre)',
+                    curp: curp || '(sin CURP)',
+                    motivo: reasons.join(' | ')
+                })
                 validationSkipped++
                 return null
             }
@@ -256,6 +268,7 @@ export async function importFromExcel(rows: any[]) {
             successful,
             duplicates,
             validationSkipped,
+            invalidDetails,
         }
     } catch (error: any) {
         console.error('Import Error:', error)

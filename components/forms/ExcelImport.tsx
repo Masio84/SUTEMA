@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import * as XLSX from 'xlsx'
-import { FileUp, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Wand2 } from 'lucide-react'
+import { FileUp, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Wand2, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { importFromExcel } from '@/app/actions/import'
@@ -130,6 +130,8 @@ export default function ExcelImport() {
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [summary, setSummary] = useState<{ total: number, successful: number, duplicates: number, validationSkipped: number } | null>(null)
+    const [invalidDetails, setInvalidDetails] = useState<{ fila: number; nombre: string; curp: string; motivo: string }[]>([])
+    const [showInvalidDetail, setShowInvalidDetail] = useState(false)
 
     const handleFile = async (file: File) => {
         if (!file) return
@@ -228,6 +230,8 @@ export default function ExcelImport() {
                     duplicates: result.duplicates || 0,
                     validationSkipped: result.validationSkipped || 0
                 })
+                setInvalidDetails(result.invalidDetails || [])
+                setShowInvalidDetail(false)
                 setProgress('success')
                 setPreviewData(null)
                 setRawData(null)
@@ -249,6 +253,8 @@ export default function ExcelImport() {
         setFileName(null)
         setProgress('idle')
         setSummary(null)
+        setInvalidDetails([])
+        setShowInvalidDetail(false)
     }
 
     const updateCell = (index: number, field: string, value: string) => {
@@ -383,23 +389,74 @@ export default function ExcelImport() {
                     </div>
 
                     {summary && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full pt-4">
-                            <div className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-3xl">
-                                <p className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Total</p>
-                                <p className="text-xl font-bold">{summary.total}</p>
+                        <div className="w-full space-y-4 pt-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-3xl">
+                                    <p className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Total</p>
+                                    <p className="text-xl font-bold">{summary.total}</p>
+                                </div>
+                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-3xl border border-emerald-100 dark:border-emerald-900/50">
+                                    <p className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Éxito</p>
+                                    <p className="text-xl font-bold text-emerald-600">{summary.successful}</p>
+                                </div>
+                                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-3xl border border-amber-100 dark:border-amber-900/50">
+                                    <p className="text-[10px] font-black uppercase text-amber-600 tracking-wider">Duplicados</p>
+                                    <p className="text-xl font-bold text-amber-600">{summary.duplicates}</p>
+                                </div>
+                                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-3xl border border-red-100 dark:border-red-900/50">
+                                    <p className="text-[10px] font-black uppercase text-red-600 tracking-wider">Inválidos</p>
+                                    <p className="text-xl font-bold text-red-600">{summary.validationSkipped}</p>
+                                </div>
                             </div>
-                            <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-3xl border border-emerald-100 dark:border-emerald-900/50">
-                                <p className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Éxito</p>
-                                <p className="text-xl font-bold text-emerald-600">{summary.successful}</p>
-                            </div>
-                            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-3xl border border-amber-100 dark:border-amber-900/50">
-                                <p className="text-[10px] font-black uppercase text-amber-600 tracking-wider">Duplicados</p>
-                                <p className="text-xl font-bold text-amber-600">{summary.duplicates}</p>
-                            </div>
-                            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-3xl border border-red-100 dark:border-red-900/50">
-                                <p className="text-[10px] font-black uppercase text-red-600 tracking-wider">Inválidos</p>
-                                <p className="text-xl font-bold text-red-600">{summary.validationSkipped}</p>
-                            </div>
+
+                            {/* Invalid detail accordion */}
+                            {invalidDetails.length > 0 && (
+                                <div className="w-full rounded-2xl border border-red-200 dark:border-red-900/50 overflow-hidden">
+                                    <button
+                                        onClick={() => setShowInvalidDetail(v => !v)}
+                                        className="w-full flex items-center justify-between px-5 py-4 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/30 transition-colors text-left"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+                                            <span className="font-black text-sm text-red-700 dark:text-red-400">
+                                                {invalidDetails.length} registro{invalidDetails.length !== 1 ? 's' : ''} rechazado{invalidDetails.length !== 1 ? 's' : ''} — ver motivos
+                                            </span>
+                                        </div>
+                                        {showInvalidDetail
+                                            ? <ChevronUp className="h-4 w-4 text-red-500 shrink-0" />
+                                            : <ChevronDown className="h-4 w-4 text-red-500 shrink-0" />}
+                                    </button>
+                                    {showInvalidDetail && (
+                                        <div className="overflow-x-auto max-h-72 overflow-y-auto">
+                                            <Table className="table-fixed w-full">
+                                                <TableHeader className="bg-red-50/80 dark:bg-red-950/10 sticky top-0">
+                                                    <TableRow className="border-red-100 dark:border-red-900/30 hover:bg-transparent">
+                                                        <TableHead className="font-black uppercase text-[10px] tracking-widest w-12 py-3 px-4 whitespace-nowrap">Fila</TableHead>
+                                                        <TableHead className="font-black uppercase text-[10px] tracking-widest w-36 py-3 px-4 whitespace-nowrap">Nombre</TableHead>
+                                                        <TableHead className="font-black uppercase text-[10px] tracking-widest w-40 py-3 px-4 whitespace-nowrap">CURP</TableHead>
+                                                        <TableHead className="font-black uppercase text-[10px] tracking-widest py-3 px-4 whitespace-nowrap">Motivo del Rechazo</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {invalidDetails.map((d) => (
+                                                        <TableRow key={d.fila} className="border-red-100/50 dark:border-red-900/20 hover:bg-red-50/30 dark:hover:bg-red-950/10 align-top">
+                                                            <TableCell className="font-mono text-xs font-bold text-red-400 px-4 py-3 whitespace-nowrap">{d.fila}</TableCell>
+                                                            <TableCell className="text-xs font-semibold px-4 py-3 break-words">{d.nombre}</TableCell>
+                                                            <TableCell className="font-mono text-xs px-4 py-3 text-muted-foreground break-all">{d.curp}</TableCell>
+                                                            <TableCell className="text-xs px-4 py-3">
+                                                                <span className="inline-flex items-start gap-1.5 font-bold text-red-600 dark:text-red-400 break-words">
+                                                                    <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
+                                                                    <span>{d.motivo}</span>
+                                                                </span>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
 
