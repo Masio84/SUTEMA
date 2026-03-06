@@ -131,12 +131,29 @@ export async function deleteWorker(id: string) {
 export async function importWorkers(workers: any[]) {
     const supabase = await createClient()
 
-    const { data, error } = await supabase
+    // Sanitize fields to match ACTUAL Supabase column types:
+    // - tiene_hijos    → BOOLEAN
+    // - hijos_menores_12 → BOOLEAN (real DB, not INTEGER as in schema.sql)
+    // - estatus        → lowercase ('activo', not 'Activo')
+    const safeWorkers = workers.map(w => ({
+        ...w,
+        tiene_hijos: !!(w.tiene_hijos === true || w.tiene_hijos === 'true' || w.tiene_hijos === 1 || (typeof w.tiene_hijos === 'string' && parseFloat(w.tiene_hijos) > 0) || Number(w.hijos_menores_12) > 0),
+        hijos_menores_12: !!(Number(w.hijos_menores_12) > 0),  // BOOLEAN in real DB
+        estatus: (() => {
+            const s = (w.estatus || 'activo').toLowerCase().trim()
+            if (s.includes('jubil')) return 'jubilado'
+            if (s.includes('baja')) return 'baja'
+            if (s.includes('inact')) return 'inactivo'
+            return 'activo'
+        })(),
+    }))
+
+    const { error } = await supabase
         .from('trabajadores')
-        .insert(workers)
+        .insert(safeWorkers)
 
     if (error) throw new Error(error.message)
-    return { success: true, count: workers.length }
+    return { success: true, count: safeWorkers.length }
 }
 
 export async function getDashboardStats() {

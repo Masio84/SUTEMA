@@ -67,7 +67,7 @@ export default function ImportarPage() {
                                     El archivo debe ser un libro de Excel (.xlsx) y la primera fila debe contener los encabezados exactos:
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                    {["NOMBRE", "PRIMER APELLIDO", "CURP", "AREA", "SEXO", "ESTADO CIVIL", "TELEFONO", "MUNICIPIO", "CALLE", "CANTIDAD DE HIJOS"].map(col => (
+                                    {["NOMBRE", "PRIMER APELLIDO", "SEGUNDO APELLIDO", "CURP", "CLAVE DE ELECTOR", "SEXO", "ESTADO CIVIL", "TELEFONO", "FECHA DE NACIMIENTO", "CALLE", "NUM EXT", "NUM INT", "COLONIA", "MUNICIPIO", "SECCION", "AREA", "DEPENDENCIA", "TIENE HIJOS", "CANTIDAD DE HIJOS", "ESTATUS"].map(col => (
                                         <span key={col} className="bg-white/50 dark:bg-black/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400">
                                             {col}
                                         </span>

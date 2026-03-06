@@ -9,6 +9,7 @@ export const workerSchema = z.object({
     sexo: z.enum(["Masculino", "Femenino", "Otro"]),
     estado_civil: z.enum(["Soltero/a", "Casado/a", "Divorciado/a", "Viudo/a", "Unión Libre"]),
     telefono: z.string().min(10, "Formato de teléfono inválido").optional().or(z.literal("")),
+    fecha_nacimiento: z.date().optional().nullable(),
 
     // Información Laboral
     adscripcion_id: z.string().min(1, "Adscripción es requerida"),

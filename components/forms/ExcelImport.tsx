@@ -2,12 +2,11 @@
 
 import React, { useState, useRef } from 'react'
 import * as XLSX from 'xlsx'
-import { FileUp, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react'
+import { FileUp, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Wand2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { importFromExcel } from '@/app/actions/import'
 import { toast } from 'sonner'
-import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import {
@@ -19,19 +18,121 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
+// ─────────────────────────────────────────────
+// Local autocorrect helpers (mirrors server-side)
+// ─────────────────────────────────────────────
+
+const removeAccents = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+const toTitleCase = (s: string) =>
+    s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim()
+
+const normalizeSexo = (raw: string) => {
+    if (!raw) return ''
+    const s = removeAccents(raw.toLowerCase().trim())
+    if (/^(m|masc|masculine|hombre|h|masculino)/.test(s)) return 'Masculino'
+    if (/^(f|fem|femenino|feme|mujer|w|woman)/.test(s)) return 'Femenino'
+    return 'Otro'
+}
+
+const normalizeEstadoCivil = (raw: string) => {
+    if (!raw) return ''
+    const s = removeAccents(raw.toLowerCase().trim())
+    if (/^(sol|solt|solter|soltero|soltera)/.test(s)) return 'Soltero/a'
+    if (/^(cas|casad|casado|casada)/.test(s)) return 'Casado/a'
+    if (/^(div|divorc|divorciad|divorciado|divorciada)/.test(s)) return 'Divorciado/a'
+    if (/^(viu|viud|viudo|viuda)/.test(s)) return 'Viudo/a'
+    if (/^(uni|union libre|unio|uli|u\.l\.|ul)/.test(s)) return 'Unión Libre'
+    return raw
+}
+
+const normalizeEstatus = (raw: string) => {
+    if (!raw) return 'Activo'
+    const s = removeAccents(raw.toLowerCase().trim())
+    if (/jubil/.test(s)) return 'Jubilado'
+    if (/baja/.test(s)) return 'Baja'
+    if (/inact/.test(s)) return 'Inactivo'
+    return 'Activo'
+}
+
+// Possible column header names per field (Excel may use various names)
+const get = (row: any, ...keys: string[]): string => {
+    for (const key of keys) {
+        const found = Object.keys(row).find(
+            k => k.toUpperCase().replace(/\s/g, '_') === key.toUpperCase().replace(/\s/g, '_')
+        )
+        if (found !== undefined && row[found] !== null && row[found] !== undefined) {
+            return String(row[found])
+        }
+    }
+    return ''
+}
+
+// Apply client-side autocorrect to a raw row for preview purposes
+const applyAutocorrect = (row: any): any => ({
+    ...row,
+    _nombre: toTitleCase(get(row, 'NOMBRE')),
+    _apellido_paterno: toTitleCase(get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')),
+    _apellido_materno: toTitleCase(get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')),
+    _curp: get(row, 'CURP').toUpperCase(),
+    _clave_elector: get(row, 'CLAVE DE ELECTOR', 'CLAVE_DE_ELECTOR').toUpperCase(),
+    _sexo: normalizeSexo(get(row, 'SEXO')),
+    _estado_civil: normalizeEstadoCivil(get(row, 'ESTADO CIVIL', 'ESTADO_CIVIL')),
+    _telefono: get(row, 'TELEFONO'),
+    _fecha_nacimiento: get(row, 'FECHA DE NACIMIENTO', 'FECHA_DE_NACIMIENTO'),
+    _calle: toTitleCase(get(row, 'CALLE')),
+    _num_ext: get(row, 'NUM EXT', 'NUM_EXT', 'NUMERO EXTERIOR'),
+    _num_int: get(row, 'NUM INT', 'NUM_INT', 'NUMERO INTERIOR'),
+    _colonia: toTitleCase(get(row, 'COLONIA')),
+    _municipio: toTitleCase(get(row, 'MUNICIPIO') || 'Aguascalientes'),
+    _seccion: get(row, 'SECCION'),
+    _area: get(row, 'AREA', 'DEPENDENCIA'),
+    _tiene_hijos: get(row, 'TIENE HIJOS', 'TIENE_HIJOS'),
+    _cantidad_hijos: get(row, 'CANTIDAD DE HIJOS', 'CANTIDAD_DE_HIJOS'),
+    _estatus: normalizeEstatus(get(row, 'ESTATUS')),
+})
+
+// ─────────────────────────────────────────────
+// Preview column definitions
+// ─────────────────────────────────────────────
+
+const PREVIEW_COLS: { label: string; field: string; minWidth?: number }[] = [
+    { label: 'Nombre', field: '_nombre', minWidth: 120 },
+    { label: 'A. Paterno', field: '_apellido_paterno', minWidth: 120 },
+    { label: 'A. Materno', field: '_apellido_materno', minWidth: 120 },
+    { label: 'CURP', field: '_curp', minWidth: 170 },
+    { label: 'Clave Elector', field: '_clave_elector', minWidth: 160 },
+    { label: 'Sexo', field: '_sexo', minWidth: 100 },
+    { label: 'Est. Civil', field: '_estado_civil', minWidth: 110 },
+    { label: 'Teléfono', field: '_telefono', minWidth: 120 },
+    { label: 'F. Nacimiento', field: '_fecha_nacimiento', minWidth: 120 },
+    { label: 'Calle', field: '_calle', minWidth: 140 },
+    { label: 'Núm Ext', field: '_num_ext', minWidth: 80 },
+    { label: 'Núm Int', field: '_num_int', minWidth: 80 },
+    { label: 'Colonia', field: '_colonia', minWidth: 130 },
+    { label: 'Municipio', field: '_municipio', minWidth: 130 },
+    { label: 'Sección', field: '_seccion', minWidth: 80 },
+    { label: 'Área / Adscripción', field: '_area', minWidth: 200 },
+    { label: 'Tiene Hijos', field: '_tiene_hijos', minWidth: 90 },
+    { label: 'Cant. Hijos', field: '_cantidad_hijos', minWidth: 90 },
+    { label: 'Estatus', field: '_estatus', minWidth: 100 },
+]
+
+// ─────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────
+
 export default function ExcelImport() {
+    const [rawData, setRawData] = useState<any[] | null>(null)
     const [previewData, setPreviewData] = useState<any[] | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
     const [fileName, setFileName] = useState<string | null>(null)
     const [progress, setProgress] = useState<'idle' | 'parsing' | 'uploading' | 'success' | 'error'>('idle')
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
-
     const [summary, setSummary] = useState<{ total: number, successful: number, duplicates: number, validationSkipped: number } | null>(null)
 
     const handleFile = async (file: File) => {
         if (!file) return
-
         const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls')
         if (!isExcel) {
             toast.error("Por favor selecciona un archivo .xlsx o .xls válido")
@@ -51,48 +152,39 @@ export default function ExcelImport() {
                 const wb = XLSX.read(bstr, { type: 'binary', cellDates: true })
                 const wsname = wb.SheetNames[0]
                 const ws = wb.Sheets[wsname]
-                const rawData = XLSX.utils.sheet_to_json(ws)
+                const rawRows = XLSX.utils.sheet_to_json(ws)
 
-                if (rawData.length === 0) {
+                if (rawRows.length === 0) {
                     toast.error("El archivo está vacío")
                     setIsProcessing(false)
                     setProgress('error')
                     return
                 }
 
-                // Clean and sanitize data for serialization
-                const cleanRows = rawData.map((row: any) => {
-                    const cleanRow: Record<string, string | number | boolean | null> = {}
-
+                // Clean dates and primitives for serialisation
+                const cleanRows = rawRows.map((row: any) => {
+                    const cleaned: Record<string, string | number | boolean | null> = {}
                     Object.keys(row).forEach(key => {
                         const val = row[key]
-
                         if (val instanceof Date) {
-                            // Convert dates to YYYY-MM-DD
-                            cleanRow[key] = val.toISOString().split('T')[0]
+                            cleaned[key] = val.toISOString().split('T')[0]
                         } else if (typeof val === 'string') {
-                            // Normalize strings
-                            let cleanVal = val.trim()
-                            if (key === 'CURP') cleanVal = cleanVal.toUpperCase()
-                            cleanRow[key] = cleanVal
+                            cleaned[key] = val.trim()
                         } else if (typeof val === 'number' || typeof val === 'boolean') {
-                            cleanRow[key] = val
-                        } else if (val === null || val === undefined) {
-                            cleanRow[key] = null
+                            cleaned[key] = val
                         } else {
-                            // Fallback for any other types
-                            cleanRow[key] = String(val)
+                            cleaned[key] = val == null ? null : String(val)
                         }
                     })
-                    return cleanRow
+                    return cleaned
                 })
 
-                // Final safety check: ensure strictly plain objects via JSON roundtrip
-                const sanitizedRows = JSON.parse(JSON.stringify(cleanRows))
-                console.log("Rows ready for import:", sanitizedRows)
+                const sanitized = JSON.parse(JSON.stringify(cleanRows))
+                const corrected = sanitized.map(applyAutocorrect)
 
+                setRawData(sanitized)
+                setPreviewData(corrected)
                 setProgress('idle')
-                setPreviewData(sanitizedRows)
             } catch (err) {
                 console.error(err)
                 toast.error("Error al leer el archivo")
@@ -114,30 +206,20 @@ export default function ExcelImport() {
         if (file) handleFile(file)
     }
 
-    const onDragOver = (e: React.DragEvent) => {
-        e.preventDefault()
-        setIsDragging(true)
-    }
-
-    const onDragLeave = () => {
-        setIsDragging(false)
-    }
-
+    const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true) }
+    const onDragLeave = () => setIsDragging(false)
     const onDrop = (e: React.DragEvent) => {
-        e.preventDefault()
-        setIsDragging(false)
+        e.preventDefault(); setIsDragging(false)
         const file = e.dataTransfer.files?.[0]
         if (file) handleFile(file)
     }
 
     const handleConfirmImport = async () => {
-        if (!previewData) return
+        if (!rawData) return
         setIsProcessing(true)
         setProgress('uploading')
-
         try {
-            const result = await importFromExcel(previewData)
-
+            const result = await importFromExcel(rawData)
             if (result.success) {
                 toast.success("Importación finalizada")
                 setSummary({
@@ -147,12 +229,13 @@ export default function ExcelImport() {
                     validationSkipped: result.validationSkipped || 0
                 })
                 setProgress('success')
-                setPreviewData(null) // Hide preview table on success
+                setPreviewData(null)
+                setRawData(null)
             } else {
                 toast.error(result.error)
                 setProgress('error')
             }
-        } catch (error) {
+        } catch {
             toast.error("Error inesperado en la importación")
             setProgress('error')
         } finally {
@@ -162,104 +245,83 @@ export default function ExcelImport() {
 
     const handleDiscard = () => {
         setPreviewData(null)
+        setRawData(null)
         setFileName(null)
         setProgress('idle')
         setSummary(null)
     }
 
-    const updateCell = (index: number, key: string, value: string) => {
+    const updateCell = (index: number, field: string, value: string) => {
         if (!previewData) return
-        const newData = [...previewData]
-        newData[index] = { ...newData[index], [key]: value }
-        setPreviewData(newData)
+        const updated = [...previewData]
+        updated[index] = { ...updated[index], [field]: value }
+        setPreviewData(updated)
     }
 
+    // ── Preview table ──────────────────────────────────────────────
     if (previewData) {
         return (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Header bar */}
                 <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
                     <div>
                         <h3 className="text-xl font-black flex items-center gap-2">
                             <FileSpreadsheet className="h-6 w-6 text-primary" />
                             Vista Previa de Datos
+                            <span className="ml-2 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">
+                                <Wand2 className="h-3 w-3" /> Autocorregido
+                            </span>
                         </h3>
                         <p className="text-sm font-medium text-muted-foreground mt-1">
-                            Revisa y corrige los datos antes de importarlos a la base de datos. Se encontraron <strong className="text-foreground">{previewData.length}</strong> registros.
+                            Revisa y corrige los datos antes de importarlos. Se encontraron{' '}
+                            <strong className="text-foreground">{previewData.length}</strong> registros.
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={handleDiscard}
-                            disabled={isProcessing}
-                            className="rounded-xl h-12 px-6 font-bold"
-                        >
+                        <Button variant="outline" onClick={handleDiscard} disabled={isProcessing} className="rounded-xl h-12 px-6 font-bold">
                             Descartar
                         </Button>
-                        <Button
-                            onClick={handleConfirmImport}
-                            disabled={isProcessing}
-                            className="rounded-xl h-12 px-6 font-bold gap-2 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
-                        >
+                        <Button onClick={handleConfirmImport} disabled={isProcessing} className="rounded-xl h-12 px-6 font-bold gap-2 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20">
                             {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
                             {isProcessing ? "Importando..." : "Cargar Registros"}
                         </Button>
                     </div>
                 </div>
 
+                {/* Full preview table */}
                 <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader className="bg-zinc-50 dark:bg-zinc-900/50">
                                 <TableRow className="hover:bg-transparent border-zinc-200 dark:border-zinc-800">
-                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap px-6 py-4">#</TableHead>
-                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">CURP</TableHead>
-                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">Nombre (s)</TableHead>
-                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">A. Paterno</TableHead>
-                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">Área / Adscripción</TableHead>
-                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4 max-w-[120px]">Estatus</TableHead>
+                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap px-4 py-4 sticky left-0 bg-zinc-50 dark:bg-zinc-900/80 z-10">#</TableHead>
+                                    {PREVIEW_COLS.map(col => (
+                                        <TableHead
+                                            key={col.field}
+                                            className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4 px-3"
+                                            style={{ minWidth: col.minWidth }}
+                                        >
+                                            {col.label}
+                                        </TableHead>
+                                    ))}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {previewData.slice(0, 100).map((row, idx) => (
                                     <TableRow key={idx} className="group border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/20">
-                                        <TableCell className="font-mono text-xs text-muted-foreground px-6 py-3">{idx + 1}</TableCell>
-                                        <TableCell className="py-2">
-                                            <Input
-                                                value={row.CURP || ''}
-                                                onChange={(e) => updateCell(idx, 'CURP', e.target.value)}
-                                                className="h-8 text-xs font-mono uppercase bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[160px]"
-                                            />
+                                        <TableCell className="font-mono text-xs text-muted-foreground px-4 py-2 sticky left-0 bg-white dark:bg-zinc-950 z-10">
+                                            {idx + 1}
                                         </TableCell>
-                                        <TableCell className="py-2">
-                                            <Input
-                                                value={row.NOMBRE || ''}
-                                                onChange={(e) => updateCell(idx, 'NOMBRE', e.target.value)}
-                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[120px]"
-                                            />
-                                        </TableCell>
-                                        <TableCell className="py-2">
-                                            <Input
-                                                value={row['PRIMER APELLIDO'] || row['APELLIDO PATERNO'] || ''}
-                                                onChange={(e) => updateCell(idx, row['PRIMER APELLIDO'] ? 'PRIMER APELLIDO' : 'APELLIDO PATERNO', e.target.value)}
-                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[120px]"
-                                            />
-                                        </TableCell>
-                                        <TableCell className="py-2">
-                                            <Input
-                                                value={row.AREA || ''}
-                                                onChange={(e) => updateCell(idx, 'AREA', e.target.value)}
-                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[200px]"
-                                            />
-                                        </TableCell>
-                                        <TableCell className="py-2 max-w-[120px]">
-                                            <Input
-                                                value={row.ESTATUS || ''}
-                                                onChange={(e) => updateCell(idx, 'ESTATUS', e.target.value)}
-                                                placeholder="Activo"
-                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2"
-                                            />
-                                        </TableCell>
+                                        {PREVIEW_COLS.map(col => (
+                                            <TableCell key={col.field} className="py-1 px-2">
+                                                <Input
+                                                    value={row[col.field] ?? ''}
+                                                    onChange={(e) => updateCell(idx, col.field, e.target.value)}
+                                                    className="h-7 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2"
+                                                    style={{ minWidth: col.minWidth }}
+                                                />
+                                            </TableCell>
+                                        ))}
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -267,7 +329,9 @@ export default function ExcelImport() {
                     </div>
                     {previewData.length > 100 && (
                         <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 text-center border-t border-zinc-200 dark:border-zinc-800">
-                            <span className="text-xs font-bold text-muted-foreground">Mostrando los primeros 100 registros de {previewData.length}</span>
+                            <span className="text-xs font-bold text-muted-foreground">
+                                Mostrando los primeros 100 registros de {previewData.length}
+                            </span>
                         </div>
                     )}
                 </Card>
@@ -275,6 +339,7 @@ export default function ExcelImport() {
         )
     }
 
+    // ── Upload zone ────────────────────────────────────────────────
     return (
         <Card
             onDragOver={onDragOver}
@@ -282,9 +347,7 @@ export default function ExcelImport() {
             onDrop={onDrop}
             className={cn(
                 "rounded-[2.5rem] border-dashed border-2 transition-all backdrop-blur-sm overflow-hidden",
-                isDragging
-                    ? "border-primary bg-primary/5 scale-[1.01]"
-                    : "border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/20",
+                isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/20",
                 progress === 'success' && "border-emerald-500/50 bg-emerald-50/50"
             )}
         >

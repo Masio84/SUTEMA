@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS trabajadores (
     sexo TEXT CHECK (sexo IN ('Masculino', 'Femenino', 'Otro')),
     estado_civil TEXT CHECK (estado_civil IN ('Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a', 'Unión Libre')),
     telefono TEXT,
+    fecha_nacimiento DATE,
     
     -- Address
     calle TEXT,

@@ -5,10 +5,78 @@ import { createClient } from '@/lib/supabase/server'
 import * as workersService from '@/lib/services/workers'
 import { getAdscripciones } from '@/lib/services/adscripciones'
 
-// Helper to remove accents/diacritics for easier matching
-const removeAccents = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+// ──────────────────────────────────────────────
+// Text helpers
+// ──────────────────────────────────────────────
 
-// Smart matcher dictionary using highly distinctive keywords/regex to catch typos
+/** Remove accents/diacritics for fuzzy matching */
+const removeAccents = (str: string) =>
+    str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+
+/** Converts "JUAN PABLO" or "juan pablo" to "Juan Pablo" */
+const toTitleCase = (str: string): string =>
+    str
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+        .trim()
+
+// ──────────────────────────────────────────────
+// Field normalizers (autocorrect)
+// ──────────────────────────────────────────────
+
+/** Normalize sexo: handles abbreviations, typos, incomplete words */
+const normalizeSexo = (raw: string): 'Masculino' | 'Femenino' | 'Otro' => {
+    if (!raw) return 'Masculino'
+    const s = removeAccents(raw.toLowerCase().trim())
+    if (/^(m|masc|masculine|hombre|h|masculino)/.test(s)) return 'Masculino'
+    if (/^(f|fem|femenino|feme|mujer|w|woman)/.test(s)) return 'Femenino'
+    return 'Otro'
+}
+
+/**
+ * Normalize estado_civil: handles abbreviations, typos, incomplete words
+ * DB enum: 'Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a', 'Unión Libre'
+ */
+const normalizeEstadoCivil = (raw: string): string => {
+    if (!raw) return 'Soltero/a'
+    const s = removeAccents(raw.toLowerCase().trim())
+    if (/^(sol|solt|solter|soltero|soltera)/.test(s)) return 'Soltero/a'
+    if (/^(cas|casad|casado|casada)/.test(s)) return 'Casado/a'
+    if (/^(div|divorc|divorciad|divorciado|divorciada)/.test(s)) return 'Divorciado/a'
+    if (/^(viu|viud|viudo|viuda)/.test(s)) return 'Viudo/a'
+    if (/^(uni|union libre|unio|uli|u\.l\.|ul)/.test(s)) return 'Unión Libre'
+    return 'Soltero/a' // safe default
+}
+
+/**
+ * Normalize estatus
+ * DB constraint: trabajadores_estatus_check allows 'Activo', 'Inactivo', 'Baja', 'Jubilado'
+ */
+const normalizeEstatus = (raw: string | null | undefined): string => {
+    if (!raw) return 'activo'
+    const s = removeAccents(raw.toLowerCase().trim())
+    if (/jubil/.test(s)) return 'jubilado'
+    if (/baja/.test(s)) return 'baja'
+    if (/inact/.test(s)) return 'inactivo'
+    return 'activo'
+}
+
+/** Normalize tiene_hijos: SI/S/1/YES/any positive number → true, else false */
+const normalizeTieneHijos = (raw: string | null | undefined, cantidadHijos: number): boolean => {
+    if (cantidadHijos > 0) return true
+    if (!raw) return false
+    const s = removeAccents(raw.toString().toLowerCase().trim())
+    // Numeric string: "2", "3"... means that many children → has children
+    const asNum = parseFloat(s)
+    if (!isNaN(asNum) && asNum > 0) return true
+    return /^(si|s|yes|y|true|t)$/.test(s)
+}
+
+// ──────────────────────────────────────────────
+// Adscripción fuzzy-matcher
+// ──────────────────────────────────────────────
+
+/** Smart matcher using highly distinctive keywords/regex to catch typos */
 const getOfficialAdscripcionName = (rawInput: string): string | null => {
     if (!rawInput) return null
 
@@ -32,8 +100,33 @@ const getOfficialAdscripcionName = (rawInput: string): string | null => {
     if (normalized.includes('uneme')) return 'UNEME'
     if (normalized.includes('seem') || normalized.includes('emergencias medicas')) return 'SEEM'
 
-    return rawInput // Return verbatim if no keyword matches, hoping for exact match later
+    return rawInput // Return verbatim if no keyword matches – hoping for exact DB match later
 }
+
+// ──────────────────────────────────────────────
+// Parse a date string or serial number safely
+// ──────────────────────────────────────────────
+const parseDate = (raw: any): string | null => {
+    if (!raw) return null
+    // Already an ISO string from xlsx (cellDates: true)
+    if (typeof raw === 'string') {
+        const d = new Date(raw)
+        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0]
+        return null
+    }
+    // Excel serial number fallback
+    if (typeof raw === 'number') {
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30))
+        const days = Math.floor(raw)
+        const date = new Date(excelEpoch.getTime() + days * 86400000)
+        if (!isNaN(date.getTime())) return date.toISOString().split('T')[0]
+    }
+    return null
+}
+
+// ──────────────────────────────────────────────
+// Main export
+// ──────────────────────────────────────────────
 
 export async function importFromExcel(rows: any[]) {
     try {
@@ -52,76 +145,100 @@ export async function importFromExcel(rows: any[]) {
         let validationSkipped = 0
         const total = rows.length
 
-        // 3. Process rows with mapping and duplicate check
+        // 3. Process rows
         const validWorkers = rows.map((row, index) => {
-            // Helper to get value from row with case-insensitive key
-            const getVal = (searchKey: string) => {
-                const key = Object.keys(row).find(k => k.toUpperCase().replace(/\s/g, '_') === searchKey.toUpperCase().replace(/\s/g, '_'))
-                return key ? row[key] : null
+            // Case-insensitive key lookup (spaces and underscores normalized)
+            const getVal = (searchKey: string): any => {
+                const normalKey = searchKey.toUpperCase().replace(/\s/g, '_')
+                const foundKey = Object.keys(row).find(
+                    k => k.toUpperCase().replace(/\s/g, '_') === normalKey
+                )
+                return foundKey ? row[foundKey] : null
             }
 
+            // ── CURP ──────────────────────────────────────────
             const curp = getVal('CURP')?.toString().trim().toUpperCase()
 
-            // Intelligent Area Normalization
-            const rawArea = getVal('AREA')?.toString() || ''
+            // ── ÁREA / DEPENDENCIA (alias) ─────────────────────
+            // "DEPENDENCIA" and "AREA" both point to adscripcion_id
+            const rawArea = (getVal('AREA') || getVal('DEPENDENCIA'))?.toString() || ''
             const officialName = getOfficialAdscripcionName(rawArea)
             const adscId = officialName ? adscMap.get(officialName.toLowerCase().trim()) : null
 
-            // Validation: name, curp and area are mandatory
-            if (!getVal('NOMBRE') || !curp || !adscId) {
+            // ── Mandatory field validation ─────────────────────
+            const rawNombre = getVal('NOMBRE')?.toString().trim()
+            if (!rawNombre || !curp || !adscId) {
                 if (rawArea && !adscId) {
-                    console.warn(`[Row ${index + 1}] Warning: Area "${rawArea}" normalized to "${officialName}" could not be mapped to a valid ID.`);
+                    console.warn(`[Row ${index + 1}] Area "${rawArea}" → "${officialName}" no encontrada en DB.`)
                 }
                 validationSkipped++
                 return null
             }
 
-            // Duplicate check
+            // ── Duplicate check ────────────────────────────────
             if (existingCurps.has(curp)) {
                 duplicates++
                 return null
             }
 
-            // Logic for children
-            const tieneHijosVal = getVal('TIENE HIJOS')?.toString().toUpperCase().trim()
-            const cantidadHijos = parseInt(getVal('CANTIDAD DE HIJOS')) || 0
-            const tieneHijos = (tieneHijosVal === 'SI') || (cantidadHijos > 0)
+            // ── Name fields (title case correction) ───────────
+            const nombre = toTitleCase(rawNombre)
+            const apellidoPaterno = toTitleCase(
+                (getVal('PRIMER APELLIDO') || getVal('APELLIDO PATERNO'))?.toString().trim() || ''
+            )
+            const apellidoMaterno = toTitleCase(
+                (getVal('SEGUNDO APELLIDO') || getVal('APELLIDO MATERNO'))?.toString().trim() || ''
+            )
 
-            // Intelligent ESTATUS mapping or default to 'Activo'
-            // DB Constraint: trabajadores_estatus_check allows only "Activo" or "Jubilado"
-            let estatus = 'activo'
-            const rawEstatus = getVal('ESTATUS')
-            if (rawEstatus) {
-                const s = rawEstatus.toString().trim().toLowerCase()
-                if (s.includes('jubil')) {
-                    estatus = 'jubilado'
-                } else {
-                    estatus = 'activo'
-                }
-            }
-            console.log("Worker estatus:", estatus)
+            // ── Autocorrected fields ───────────────────────────
+            const sexo = normalizeSexo(getVal('SEXO')?.toString() || '')
+            const estadoCivil = normalizeEstadoCivil(getVal('ESTADO_CIVIL') || getVal('ESTADO CIVIL') || '')
+            const estatus = normalizeEstatus(getVal('ESTATUS')?.toString())
+
+            // ── Hijos ──────────────────────────────────────────
+            // Safely parse child count — handles number or string values from Excel
+            const rawHijos = getVal('CANTIDAD_DE_HIJOS') || getVal('CANTIDAD DE HIJOS')
+            const cantidadHijos = Math.floor(Math.max(0, Number(rawHijos) || 0))
+            const rawTieneHijos = getVal('TIENE_HIJOS') || getVal('TIENE HIJOS')
+            const tieneHijos = normalizeTieneHijos(rawTieneHijos?.toString(), cantidadHijos)
+
+            // ── Fecha nacimiento ───────────────────────────────
+            const fechaNacimientoRaw = getVal('FECHA_DE_NACIMIENTO') || getVal('FECHA DE NACIMIENTO')
+            const fechaNacimiento = parseDate(fechaNacimientoRaw)
+
+            // ── Address ───────────────────────────────────────
+            const calle = toTitleCase(getVal('CALLE')?.toString().trim() || '')
+            const colonia = toTitleCase(getVal('COLONIA')?.toString().trim() || '')
+            const municipio = toTitleCase(getVal('MUNICIPIO')?.toString().trim() || 'Aguascalientes')
+            const numExt = getVal('NUM_EXT') || getVal('NUM EXT') || getVal('NUMERO EXTERIOR') || ''
+            const numInt = getVal('NUM_INT') || getVal('NUM INT') || getVal('NUMERO INTERIOR') || ''
+
+            // ── INE ───────────────────────────────────────────
+            const seccionIne = (getVal('SECCION')?.toString().trim() || '')
+            const claveElector = (getVal('CLAVE_DE_ELECTOR') || getVal('CLAVE DE ELECTOR'))?.toString().trim() || ''
 
             return {
-                nombre: getVal('NOMBRE').toString().trim(),
-                apellido_paterno: (getVal('PRIMER APELLIDO') || getVal('APELLIDO PATERNO'))?.toString().trim() || '',
-                apellido_materno: (getVal('SEGUNDO APELLIDO') || getVal('APELLIDO MATERNO'))?.toString().trim() || '',
-                curp: curp,
-                sexo: getVal('SEXO')?.toString().trim() || 'Masculino',
-                estado_civil: getVal('ESTADO CIVIL')?.toString().trim() || 'Soltero/a',
+                nombre,
+                apellido_paterno: apellidoPaterno,
+                apellido_materno: apellidoMaterno,
+                curp,
+                sexo,
+                estado_civil: estadoCivil,
                 telefono: getVal('TELEFONO')?.toString().trim() || '',
+                fecha_nacimiento: fechaNacimiento,
                 adscripcion_id: adscId,
                 unidad_id: null,
                 fecha_ingreso: new Date().toISOString().split('T')[0],
-                tiene_hijos: tieneHijos,
-                hijos_menores_12: 0,
-                calle: getVal('CALLE')?.toString().trim() || '',
-                numero_exterior: getVal('NUM EXT')?.toString().trim() || '',
-                numero_interior: getVal('NUM INT')?.toString().trim() || '',
-                colonia: getVal('COLONIA')?.toString().trim() || '',
-                municipio: getVal('MUNICIPIO')?.toString().trim() || 'Aguascalientes',
-                seccion_ine: getVal('SECCION')?.toString().trim() || '',
-                clave_elector: getVal('CLAVE DE ELECTOR')?.toString().trim() || '',
-                estatus: estatus
+                tiene_hijos: tieneHijos === true,
+                hijos_menores_12: cantidadHijos > 0,   // BOOLEAN in real Supabase DB
+                calle,
+                numero_exterior: numExt.toString().trim(),
+                numero_interior: numInt.toString().trim(),
+                colonia,
+                municipio,
+                seccion_ine: seccionIne,
+                clave_elector: claveElector,
+                estatus,
             }
         }).filter(Boolean)
 
@@ -138,7 +255,7 @@ export async function importFromExcel(rows: any[]) {
             total,
             successful,
             duplicates,
-            validationSkipped
+            validationSkipped,
         }
     } catch (error: any) {
         console.error('Import Error:', error)
