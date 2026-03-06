@@ -7,6 +7,7 @@ import { getWorkers, deleteWorker } from '@/app/actions/workers'
 import { Search, Filter, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { PER_PAGE } from '@/app/consultas/page'
 
@@ -64,6 +65,15 @@ export default function EditarPage() {
                                 <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-0.5">Localice al trabajador que desea actualizar en la columna de acciones</p>
                             </div>
                         </div>
+                    </div>
+                    <div className="relative mt-6 max-w-xl w-full md:w-auto">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Escribe el nombre o CURP del trabajador..."
+                            className="pl-11 h-14 rounded-2xl border-border bg-background focus:ring-primary/20 focus:border-primary/40 placeholder:text-muted-foreground text-foreground font-medium shadow-sm transition-all w-full"
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+                        />
                     </div>
                 </div>
 

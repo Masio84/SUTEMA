@@ -37,90 +37,113 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: "circOut" }}
-                className="w-full max-w-[420px] relative z-10"
-            >
-                <div className="flex flex-col items-center mb-10 text-center">
-                    <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-primary/20">
-                        <span className="text-white font-black text-2xl">S</span>
+        <div className="min-h-screen flex flex-col md:flex-row bg-background">
+            {/* Left Column: Branding */}
+            <div className="hidden md:flex md:w-1/2 bg-primary-950 flex-col items-center justify-center p-12 relative overflow-hidden">
+                {/* Subtle background pattern/glow */}
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary-800/20 via-primary-950 to-primary-950 opacity-80" />
+
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="relative z-10 flex flex-col items-center text-center"
+                >
+                    <div className="w-24 h-24 bg-primary rounded-2xl flex items-center justify-center mb-8 shadow-2xl border border-white/10">
+                        <span className="text-white font-black text-4xl">S</span>
                     </div>
-                    <h1 className="text-4xl font-black text-foreground tracking-tight">SUTEMA</h1>
-                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-2">Sistema de Gestión Sindical</p>
+                    <h1 className="text-5xl lg:text-6xl font-black text-white tracking-tighter mb-4">SUTEMA</h1>
+                    <p className="text-primary-200 font-bold uppercase tracking-widest text-sm max-w-sm">
+                        Sistema Institucional de Gestión Sindical
+                    </p>
+                </motion.div>
+
+                <div className="absolute bottom-8 text-center w-full text-primary-400/50 text-[10px] uppercase tracking-widest font-bold">
+                    © {new Date().getFullYear()} SUTEMA ISSEA. Todos los derechos reservados.
                 </div>
+            </div>
 
-                <Card className="rounded-[2.5rem] border-white/50 bg-white/70 backdrop-blur-xl shadow-2xl overflow-hidden">
-                    <CardHeader className="pt-10 px-8">
-                        <CardTitle className="text-2xl font-black text-foreground">Iniciar Sesión</CardTitle>
-                        <CardDescription className="font-medium text-muted-foreground">Ingresa tus credenciales para continuar</CardDescription>
-                    </CardHeader>
-                    <CardContent className="px-8 pt-6">
-                        <form onSubmit={handleLogin} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Usuario / Email</Label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="usuario@sutema.com"
-                                        className="h-14 rounded-2xl pl-11 border-[#e5e7eb] bg-white text-[#1f2937] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Contraseña</Label>
-                                <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        className="h-14 rounded-2xl pl-11 border-[#e5e7eb] bg-white text-[#1f2937] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                            </div>
+            {/* Right Column: Login Form */}
+            <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="w-full max-w-md"
+                >
+                    {/* Mobile Header (Only visible on small screens) */}
+                    <div className="md:hidden flex flex-col items-center mb-10 text-center">
+                        <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-4">
+                            <span className="text-white font-black text-2xl">S</span>
+                        </div>
+                        <h1 className="text-3xl font-black text-foreground tracking-tight">SUTEMA</h1>
+                        <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1">Gestión Sindical</p>
+                    </div>
 
-                            <Button
-                                type="submit"
-                                className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-lg hover:scale-[0.98] active:scale-95 transition-all shadow-lg shadow-primary/20"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Entrando...
-                                    </>
-                                ) : (
-                                    "Ingresar"
-                                )}
-                            </Button>
-                        </form>
-                    </CardContent>
-                    <CardFooter className="px-8 pb-10 flex flex-col items-center">
-                        <button
-                            type="button"
-                            className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
-                            onClick={() => toast.info("Comuníquese con el administrador del sistema para restablecer su contraseña.")}
+                    <div className="mb-10 text-center md:text-left">
+                        <h2 className="text-3xl font-black text-foreground tracking-tight">Iniciar Sesión</h2>
+                        <p className="text-muted-foreground font-medium mt-2">Ingrese sus credenciales institucionales</p>
+                    </div>
+
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Usuario Institucional</Label>
+                            <div className="relative">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="usuario@sutema.com"
+                                    className="h-14 rounded-xl pl-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-medium shadow-sm"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center ml-1">
+                                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contraseña</Label>
+                                <button
+                                    type="button"
+                                    className="text-[10px] font-bold text-primary hover:text-primary-800 transition-colors uppercase tracking-wider"
+                                    onClick={() => toast.info("Comuníquese con el administrador del sistema para restablecer su contraseña.")}
+                                >
+                                    ¿Olvidó su contraseña?
+                                </button>
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50" />
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    className="h-14 rounded-xl pl-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-medium shadow-sm"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <Button
+                            type="submit"
+                            className="w-full h-14 mt-4 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary-900 active:scale-[0.98] transition-all shadow-md"
+                            disabled={isLoading}
                         >
-                            ¿Olvidaste tu contraseña?
-                        </button>
-                    </CardFooter>
-                </Card>
-
-                <p className="text-center mt-10 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                    © 2024 SUTEMA ISSEA. Todos los derechos reservados.
-                </p>
-            </motion.div>
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Autenticando...
+                                </>
+                            ) : (
+                                "Acceder al Sistema"
+                            )}
+                        </Button>
+                    </form>
+                </motion.div>
+            </div>
         </div>
     )
 }
