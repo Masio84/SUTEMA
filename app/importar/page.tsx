@@ -90,6 +90,7 @@ export default function ImportarPage() {
                                     <p>Asegúrate de que los nombres de las <span className="text-foreground font-bold">Adscripciones</span> coincidan exactamente con las registradas en el sistema.</p>
                                 </div>
                                 <p>Las CURP duplicadas serán rechazadas por la base de datos para mantener la integridad de la información.</p>
+                                <p>El campo de <span className="text-foreground font-bold">Estatus</span> no es obligatorio. Si el archivo no lo incluye, todos los trabajadores se registrarán por defecto como <strong>Activos</strong>.</p>
                                 <p>Se recomienda realizar una copia de seguridad antes de importaciones masivas de gran tamaño.</p>
                             </CardContent>
                         </Card>

@@ -1,11 +1,13 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
+import Image from 'next/image'
 import { signOut } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Users, UserPlus, FileText, Settings, Search, LogOut, FileUp } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, FileText, Settings, Search, LogOut, FileUp, Menu } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
@@ -19,52 +21,60 @@ const navItems = [
 ]
 
 export default function AppLayout({ children, title, subtitle }: { children: React.ReactNode, title: string, subtitle?: string }) {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const pathname = usePathname()
+
+    const NavLinks = () => (
+        <nav className="space-y-1">
+            {navItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+                return (
+                    <a
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition-all duration-300 ${isActive
+                            ? 'bg-primary-800 text-white shadow-lg shadow-black/20'
+                            : 'text-white/50 hover:bg-white/5 hover:text-white'
+                            }`}
+                    >
+                        <div className={`transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-white/30 group-hover:text-white/70'
+                            }`}>
+                            {item.icon}
+                        </div>
+                        {item.label}
+                    </a>
+                )
+            })}
+        </nav>
+    )
 
     return (
         <div className="flex h-screen overflow-hidden font-sans">
-            {/* Sidebar */}
+            {/* Sidebar (Desktop) */}
             <motion.aside
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 className="w-72 bg-primary-900 p-8 hidden md:flex flex-col shadow-2xl z-40 relative border-r border-white/5"
             >
-                <div className="mb-12">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-2xl bg-primary-800 flex items-center justify-center text-white border border-white/10 shadow-lg">
-                            <Users className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-bold tracking-tight text-white leading-none">SUTEMA</h2>
-                            <p className="text-[10px] text-primary-400 font-bold uppercase tracking-wider mt-1">Gestión Sindical</p>
-                        </div>
-                    </div>
+                <div className="mb-12 flex flex-col items-center text-center">
+                    <Image
+                        src="/logo-blanco.png"
+                        alt="SUTEMA Logo"
+                        width={200}
+                        height={70}
+                        className="object-contain drop-shadow-lg mb-4"
+                        priority
+                    />
+                    <p className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">
+                        Sistema Institucional de Gestión Sindical
+                    </p>
                 </div>
 
                 <div className="space-y-8 flex-1">
                     <div>
                         <p className="px-4 text-[10px] font-bold text-white/30 uppercase tracking-widest mb-4">Menú Principal</p>
-                        <nav className="space-y-1">
-                            {navItems.map((item) => {
-                                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
-                                return (
-                                    <a
-                                        key={item.href}
-                                        href={item.href}
-                                        className={`group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition-all duration-300 ${isActive
-                                            ? 'bg-primary-800 text-white shadow-lg shadow-black/20'
-                                            : 'text-white/50 hover:bg-white/5 hover:text-white'
-                                            }`}
-                                    >
-                                        <div className={`transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-white/30 group-hover:text-white/70'
-                                            }`}>
-                                            {item.icon}
-                                        </div>
-                                        {item.label}
-                                    </a>
-                                )
-                            })}
-                        </nav>
+                        <NavLinks />
                     </div>
                 </div>
 
@@ -82,19 +92,68 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
-                <header className="h-20 bg-card border-b border-border sticky top-0 z-30 flex items-center justify-between px-8">
-                    <motion.div
-                        initial={{ y: -10, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">
-                            <span>SUTEMA</span>
-                            <span>/</span>
-                            <span className="text-primary">{title}</span>
+                <header className="h-20 bg-card border-b border-border sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
+                    <div className="flex items-center gap-4">
+                        {/* Mobile Menu Button */}
+                        <div className="md:hidden">
+                            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                                <SheetTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground mr-2">
+                                        <Menu className="h-6 w-6" />
+                                        <span className="sr-only">Toggle mobile menu</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="left" className="w-72 bg-primary-900 border-r border-white/5 p-8 flex flex-col">
+                                    <SheetHeader className="mb-8">
+                                        <SheetTitle className="text-white text-center">
+                                            <div className="flex flex-col items-center">
+                                                <Image
+                                                    src="/logo-blanco.png"
+                                                    alt="SUTEMA Logo"
+                                                    width={150}
+                                                    height={50}
+                                                    className="object-contain drop-shadow-lg mb-4"
+                                                    priority
+                                                />
+                                                <p className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">
+                                                    Gestión Sindical
+                                                </p>
+                                            </div>
+                                        </SheetTitle>
+                                    </SheetHeader>
+                                    <div className="space-y-8 flex-1">
+                                        <div>
+                                            <p className="px-4 text-[10px] font-bold text-white/30 uppercase tracking-widest mb-4">Menú Principal</p>
+                                            <NavLinks />
+                                        </div>
+                                    </div>
+                                    <div className="pt-6 mt-6 border-t border-white/10">
+                                        <Button
+                                            onClick={() => signOut()}
+                                            variant="ghost"
+                                            className="w-full justify-start text-white/70 hover:bg-white/5 hover:text-white font-bold h-12 rounded-xl"
+                                        >
+                                            <LogOut className="h-5 w-5 mr-3" />
+                                            Cerrar Sesión
+                                        </Button>
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
                         </div>
-                        <h1 className="text-2xl font-black tracking-tighter text-foreground">{subtitle || title}</h1>
-                    </motion.div>
+
+                        <motion.div
+                            initial={{ y: -10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">
+                                <span>SUTEMA</span>
+                                <span className="hidden sm:inline">/</span>
+                                <span className="text-primary hidden sm:inline">{title}</span>
+                            </div>
+                            <h1 className="text-xl sm:text-2xl font-black tracking-tighter text-foreground truncate max-w-[200px] sm:max-w-none">{subtitle || title}</h1>
+                        </motion.div>
+                    </div>
 
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-card border border-border shadow-sm">

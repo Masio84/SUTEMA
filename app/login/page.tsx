@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -49,10 +50,16 @@ export default function LoginPage() {
                     transition={{ duration: 0.6 }}
                     className="relative z-10 flex flex-col items-center text-center"
                 >
-                    <div className="w-24 h-24 bg-primary rounded-2xl flex items-center justify-center mb-8 shadow-2xl border border-white/10">
-                        <span className="text-white font-black text-4xl">S</span>
+                    <div className="mb-4 flex items-center justify-center">
+                        <Image
+                            src="/logo-blanco.png"
+                            alt="Logo SUTEMA"
+                            width={320}
+                            height={120}
+                            className="object-contain drop-shadow-2xl"
+                            priority
+                        />
                     </div>
-                    <h1 className="text-5xl lg:text-6xl font-black text-white tracking-tighter mb-4">SUTEMA</h1>
                     <p className="text-primary-200 font-bold uppercase tracking-widest text-sm max-w-sm">
                         Sistema Institucional de Gestión Sindical
                     </p>
@@ -73,10 +80,26 @@ export default function LoginPage() {
                 >
                     {/* Mobile Header (Only visible on small screens) */}
                     <div className="md:hidden flex flex-col items-center mb-10 text-center">
-                        <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-4">
-                            <span className="text-white font-black text-2xl">S</span>
+                        <div className="mb-2 flex items-center justify-center">
+                            {/* Logo for Light Mode */}
+                            <Image
+                                src="/logo-color.png"
+                                alt="Logo SUTEMA"
+                                width={240}
+                                height={80}
+                                className="object-contain dark:hidden"
+                                priority
+                            />
+                            {/* Logo for Dark Mode */}
+                            <Image
+                                src="/logo-blanco.png"
+                                alt="Logo SUTEMA Blanco"
+                                width={240}
+                                height={80}
+                                className="object-contain hidden dark:block"
+                                priority
+                            />
                         </div>
-                        <h1 className="text-3xl font-black text-foreground tracking-tight">SUTEMA</h1>
                         <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1">Gestión Sindical</p>
                     </div>
 
