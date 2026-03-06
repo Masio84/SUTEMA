@@ -48,9 +48,10 @@ interface WorkerTableProps {
     sortCol: string
     sortOrder: 'asc' | 'desc'
     searchTerm?: string
+    onRowClick?: (worker: Worker) => void
 }
 
-export default function WorkerTable({ workers, onDelete, onPageChange, currentPage, totalPages, onSort, sortCol, sortOrder, searchTerm = '' }: WorkerTableProps) {
+export default function WorkerTable({ workers, onDelete, onPageChange, currentPage, totalPages, onSort, sortCol, sortOrder, searchTerm = '', onRowClick }: WorkerTableProps) {
     const router = useRouter()
 
     const highlightText = (text: string | undefined | null) => {
@@ -138,7 +139,8 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
-                                    className="group border-border transition-colors hover:bg-muted/30"
+                                    className={`group border-border transition-colors hover:bg-muted/30 ${onRowClick ? 'cursor-pointer' : ''}`}
+                                    onClick={() => onRowClick?.(worker)}
                                 >
                                     <TableCell className="py-4 px-6">
                                         <div className="flex flex-col">
@@ -159,7 +161,7 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                         <span className="text-sm font-black">{getSeniority(worker.fecha_ingreso)} <span className="text-[10px] text-muted-foreground uppercase ml-1">AÑOS</span></span>
                                     </TableCell>
                                     <TableCell>{getEstatusBadge(worker.estatus)}</TableCell>
-                                    <TableCell className="text-right pr-6">
+                                    <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted rounded-lg">

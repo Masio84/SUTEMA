@@ -182,3 +182,47 @@ export async function getDashboardStats() {
         }
     }
 }
+
+// Required fields for a "complete" record (num_interior is optional)
+const REQUIRED_FIELDS = [
+    'curp', 'clave_elector', 'sexo', 'telefono', 'colonia',
+    'calle', 'numero_exterior', 'municipio', 'seccion_ine',
+    'estado_civil', 'fecha_nacimiento'
+] as const
+
+export async function getIncompleteWorkers() {
+    const supabase = await createClient()
+
+    // Fetch all workers with just the fields we need to check
+    const { data, error } = await supabase
+        .from('trabajadores')
+        .select('id, nombre, apellido_paterno, apellido_materno, curp, clave_elector, sexo, telefono, colonia, calle, numero_exterior, municipio, seccion_ine, estado_civil, fecha_nacimiento, adscripciones(nombre)')
+        .order('nombre', { ascending: true })
+
+    if (error || !data) return { workers: [], fieldMissing: {} }
+
+    // Compute which workers are incomplete and which fields are missing
+    const fieldMissing: Record<string, number> = {}
+    REQUIRED_FIELDS.forEach(f => { fieldMissing[f] = 0 })
+
+    const incomplete = data.filter(w => {
+        const missingFields: string[] = []
+        REQUIRED_FIELDS.forEach(f => {
+            const val = (w as any)[f]
+            if (!val || val === '') missingFields.push(f)
+        })
+        if (missingFields.length > 0) {
+            missingFields.forEach(f => { fieldMissing[f] = (fieldMissing[f] || 0) + 1 })
+            return true
+        }
+        return false
+    }).map(w => {
+        const missingFields = REQUIRED_FIELDS.filter(f => {
+            const val = (w as any)[f]
+            return !val || val === ''
+        })
+        return { ...w, missingFields }
+    })
+
+    return { workers: incomplete, fieldMissing }
+}

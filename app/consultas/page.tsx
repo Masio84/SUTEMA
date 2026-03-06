@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
+import WorkerDetailPanel from '@/components/workers/WorkerDetailPanel'
 import {
     Select,
     SelectContent,
@@ -49,6 +50,7 @@ export default function ConsultasPage() {
     const [page, setPage] = useState(1)
     const [sortCol, setSortCol] = useState('nombre')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+    const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null)
 
     const fetchContent = useCallback(async () => {
         setIsLoading(true)
@@ -304,6 +306,7 @@ export default function ConsultasPage() {
                         sortCol={sortCol}
                         sortOrder={sortOrder}
                         searchTerm={search}
+                        onRowClick={(w) => setSelectedWorkerId(w.id)}
                         onSort={(col) => {
                             if (sortCol === col) {
                                 setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
@@ -315,6 +318,13 @@ export default function ConsultasPage() {
                     />
                 )}
             </div>
+
+            {/* Worker detail / edit panel */}
+            <WorkerDetailPanel
+                workerId={selectedWorkerId}
+                onClose={() => setSelectedWorkerId(null)}
+                onSaved={() => { setSelectedWorkerId(null); fetchContent() }}
+            />
         </AppLayout>
     )
 }

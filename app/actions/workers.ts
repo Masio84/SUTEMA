@@ -75,3 +75,12 @@ export async function getDashboardStats() {
         }
     }
 }
+
+export async function getIncompleteWorkers() {
+    try {
+        return await workersService.getIncompleteWorkers()
+    } catch (error) {
+        console.error(error)
+        return { workers: [], fieldMissing: {} }
+    }
+}
