@@ -27,36 +27,36 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
             <motion.aside
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                className="w-72 sidebar-gradient p-8 hidden md:flex flex-col shadow-2xl z-40 relative"
+                className="w-72 bg-primary-900 p-8 hidden md:flex flex-col shadow-2xl z-40 relative border-r border-white/5"
             >
                 <div className="mb-12">
                     <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
+                        <div className="h-10 w-10 rounded-2xl bg-primary-800 flex items-center justify-center text-white border border-white/10 shadow-lg">
                             <Users className="h-6 w-6" />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold tracking-tight text-white leading-none">SUTEMA</h2>
-                            <p className="text-[10px] text-white/60 font-bold uppercase tracking-wider mt-1">Gestión Sindical</p>
+                            <p className="text-[10px] text-primary-400 font-bold uppercase tracking-wider mt-1">Gestión Sindical</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-8 flex-1">
                     <div>
-                        <p className="px-4 text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Menú Principal</p>
-                        <nav className="space-y-2">
+                        <p className="px-4 text-[10px] font-bold text-white/30 uppercase tracking-widest mb-4">Menú Principal</p>
+                        <nav className="space-y-1">
                             {navItems.map((item) => {
                                 const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
                                 return (
                                     <a
                                         key={item.href}
                                         href={item.href}
-                                        className={`group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${isActive
-                                            ? 'bg-white/20 text-white shadow-lg shadow-black/10'
-                                            : 'text-white/60 hover:bg-white/10 hover:text-white'
+                                        className={`group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition-all duration-300 ${isActive
+                                            ? 'bg-primary-800 text-white shadow-lg shadow-black/20'
+                                            : 'text-white/50 hover:bg-white/5 hover:text-white'
                                             }`}
                                     >
-                                        <div className={`transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-white/40 group-hover:text-white/80'
+                                        <div className={`transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-white/30 group-hover:text-white/70'
                                             }`}>
                                             {item.icon}
                                         </div>
@@ -72,7 +72,7 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
                     <Button
                         onClick={() => signOut()}
                         variant="ghost"
-                        className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white font-bold h-12 rounded-xl"
+                        className="w-full justify-start text-white/70 hover:bg-white/5 hover:text-white font-bold h-12 rounded-xl"
                     >
                         <LogOut className="h-5 w-5 mr-3" />
                         Cerrar Sesión
@@ -82,25 +82,26 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
-                <header className="h-20 bg-white/40 dark:bg-black/20 backdrop-blur-xl border-b border-white/20 sticky top-0 z-30 flex items-center justify-between px-8">
+                <header className="h-20 bg-card border-b border-border sticky top-0 z-30 flex items-center justify-between px-8">
                     <motion.div
                         initial={{ y: -10, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.1 }}
                     >
-                        <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 mb-1 dark:text-zinc-400">
+                        <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">
                             <span>SUTEMA</span>
                             <span>/</span>
-                            <span className="text-primary font-bold uppercase tracking-widest text-[10px]">{title}</span>
+                            <span className="text-primary">{title}</span>
                         </div>
-                        <h1 className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-white">{subtitle || title}</h1>
+                        <h1 className="text-2xl font-black tracking-tighter text-foreground">{subtitle || title}</h1>
                     </motion.div>
 
                     <div className="flex items-center gap-4">
-                        <Avatar className="h-10 w-10 border-2 border-primary/20 cursor-pointer hover:border-primary/50 transition-all shadow-md">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="bg-primary/20 text-primary-foreground text-xs font-black">AD</AvatarFallback>
-                        </Avatar>
+                        <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-card border border-border shadow-sm">
+                            <Avatar className="h-8 w-8 cursor-pointer hover:scale-110 transition-transform">
+                                <AvatarFallback className="bg-primary-900 text-white text-[10px] font-black">AD</AvatarFallback>
+                            </Avatar>
+                        </div>
                     </div>
                 </header>
 

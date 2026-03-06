@@ -1,6 +1,16 @@
 @import "tailwindcss";
 
 @theme {
+  /* Official System Palette */
+  --color-primary-950: #000c18;
+  --color-primary-900: #001D39;
+  --color-primary-800: #0A4174;
+  --color-primary-700: #49769F;
+  --color-primary-600: #4E8EA2;
+  --color-primary-500: #6EA2B3;
+  --color-primary-400: #7BBDE8;
+  --color-primary-200: #BDD8E9;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 
@@ -59,71 +69,67 @@
 
 @layer base {
   :root {
-    /* Main Background & Text */
-    --background: 210 40% 96.1%;
-    /* #f1f5f9 */
-    --foreground: 215 25% 17.1%;
-    /* #1f2937 */
+    /* Professional SaaS Palette (Slate based) */
+    --background: 210 40% 98%;
+    /* #f8fafc */
+    --foreground: 222 47% 11%;
+    /* #0f172a */
 
-    /* Cards */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 17.1%;
+    --card-foreground: 222 47% 11%;
 
-    /* Popovers */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 17.1%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary: Sage Green #6B8F71 */
-    --primary: 131 16% 49%;
+    --primary: 209 84% 25%;
+    /* Official Blue 800 */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary & Muted */
     --secondary: 210 40% 96.1%;
-    --secondary-foreground: 215 14% 34.1%;
-    /* #4b5563 */
+    --secondary-foreground: 222 47% 11%;
 
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215 14% 34.1%;
+    --muted-foreground: 215.4 25% 40%;
+    /* Darkened for better contrast */
 
-    /* Accent: Light Sage #8FBF9A */
-    --accent: 133 27% 65.9%;
-    --accent-foreground: 140 17% 36.1%;
-    /* Dark Green #4C6A56 */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11%;
 
-    /* Destructive */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    /* Controls & Layout */
-    --border: 214 32% 91%;
-    /* #e5e7eb */
-    --input: 214 32% 91%;
-    --ring: 131 16% 49%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
     --radius: 1rem;
   }
 
-  .dark {
-    --background: 140 17% 10%;
-    /* Very dark green */
-    --foreground: 133 27% 90%;
-    --card: 140 17% 15%;
-    --card-foreground: 133 27% 95%;
-    --popover: 140 17% 15%;
-    --popover-foreground: 133 27% 95%;
-    --primary: 131 16% 49%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 140 17% 20%;
-    --secondary-foreground: 133 27% 90%;
-    --muted: 140 17% 20%;
-    --muted-foreground: 133 27% 66%;
-    --accent: 140 17% 25%;
-    --accent-foreground: 133 27% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 140 17% 20%;
-    --input: 140 17% 20%;
-    --ring: 131 16% 49%;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 222 47% 4%;
+      /* Deep Navy */
+      --foreground: 210 40% 98%;
+      --card: 222 47% 6%;
+      /* Deep Navy Lighter */
+      --card-foreground: 210 40% 98%;
+      --popover: 222 47% 6%;
+      --popover-foreground: 210 40% 98%;
+      --primary: 213 94% 68%;
+      /* Official Blue 400ish for dark mode */
+      --primary-foreground: 222 47% 6%;
+      --secondary: 222 47% 11%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 222 47% 11%;
+      --muted-foreground: 215.4 16.3% 56.9%;
+      --accent: 222 47% 11%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 222 47% 11%;
+      --input: 222 47% 11%;
+      --ring: 212.7 26.8% 83.9%;
+    }
   }
 }
 
@@ -134,18 +140,19 @@
 
   body {
     @apply bg-background text-foreground font-sans min-h-screen antialiased;
-    background-image: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    background-attachment: fixed;
   }
 }
 
-/* Custom UI Polish Classes */
 @layer components {
-  .saas-card {
-    @apply bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-800/50 shadow-xl shadow-zinc-200/20 dark:shadow-none hover:shadow-2xl transition-all duration-300;
+  .glass-card {
+    @apply bg-card border border-border shadow-sm transition-all duration-300;
   }
 
   .sidebar-gradient {
-    background-image: linear-gradient(180deg, #4C6A56, #6B8F71);
+    @apply bg-primary-950;
+  }
+
+  .focus-glow {
+    @apply focus-visible:ring-4 focus-visible:ring-primary/20 focus-visible:border-primary/50 transition-all duration-200;
   }
 }

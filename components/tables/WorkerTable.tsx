@@ -97,7 +97,7 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
 
     const Header = ({ label, col, sortable = true }: { label: string, col: string, sortable?: boolean }) => (
         <TableHead
-            className={`font-bold py-5 px-6 ${sortable ? 'cursor-pointer hover:text-black dark:hover:text-white transition-colors' : ''}`}
+            className={`font-black uppercase tracking-widest text-[10px] text-muted-foreground py-5 px-6 ${sortable ? 'cursor-pointer hover:text-foreground transition-colors' : ''}`}
             onClick={() => sortable && onSort(col)}
         >
             <div className="flex items-center gap-1">
@@ -108,22 +108,22 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
 
     return (
         <div className="space-y-4">
-            <div id="workers-print-area" className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+            <div id="workers-print-area" className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
                 <Table>
-                    <TableHeader className="bg-zinc-50/50 dark:bg-zinc-900/50">
-                        <TableRow className="hover:bg-transparent border-zinc-100 dark:border-zinc-900">
+                    <TableHeader className="bg-primary/5 dark:bg-primary-900/20 border-b border-border">
+                        <TableRow className="hover:bg-transparent border-border">
                             <Header label="Nombre Completo" col="nombre" />
                             <Header label="CURP" col="curp" />
                             <Header label="Adscripción" col="adscripcion_id" />
                             <Header label="Antigüedad" col="fecha_ingreso" />
                             <Header label="Estatus" col="estatus" />
-                            <TableHead className="w-[100px] text-right font-bold pr-6">Acciones</TableHead>
+                            <TableHead className="w-[100px] text-right font-black uppercase tracking-widest text-[10px] text-muted-foreground pr-6">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {workers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-48 text-center text-zinc-500">
+                                <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
                                     <div className="flex flex-col items-center gap-2">
                                         <Search className="h-8 w-8 opacity-20" />
                                         <p className="font-bold">No se encontraron trabajadores.</p>
@@ -138,35 +138,35 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
-                                    className="group border-zinc-100 dark:border-zinc-900 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/40"
+                                    className="group border-border transition-colors hover:bg-muted/30"
                                 >
                                     <TableCell className="py-4 px-6">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-zinc-900 dark:text-zinc-50">
+                                            <span className="font-bold text-foreground">
                                                 {highlightText(worker.nombre)} {highlightText(worker.apellido_paterno)}
                                             </span>
-                                            <span className="text-xs text-zinc-500">{highlightText(worker.apellido_materno) || ''}</span>
+                                            <span className="text-xs text-muted-foreground">{highlightText(worker.apellido_materno) || ''}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="font-mono text-xs uppercase tracking-wider">{highlightText(worker.curp)}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium">{highlightText(worker.adscripciones?.nombre || worker.adscripcion_id)}</span>
-                                            {worker.unidades?.nombre && <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">{highlightText(worker.unidades.nombre)}</span>}
+                                            {worker.unidades?.nombre && <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tight">{highlightText(worker.unidades.nombre)}</span>}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span className="text-sm font-bold">{getSeniority(worker.fecha_ingreso)} <span className="text-[10px] text-zinc-500 uppercase ml-1">AÑOS</span></span>
+                                        <span className="text-sm font-black">{getSeniority(worker.fecha_ingreso)} <span className="text-[10px] text-muted-foreground uppercase ml-1">AÑOS</span></span>
                                     </TableCell>
                                     <TableCell>{getEstatusBadge(worker.estatus)}</TableCell>
                                     <TableCell className="text-right pr-6">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted rounded-lg">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="rounded-xl border-zinc-200 dark:border-zinc-800">
+                                            <DropdownMenuContent align="end" className="rounded-xl border-border">
                                                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem onClick={() => router.push(`/editar/${worker.id}`)} className="rounded-lg gap-2">
@@ -186,8 +186,8 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
             </div>
 
             {totalPages > 1 && (
-                <div className="flex justify-between items-center bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm">
-                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-2">Página {currentPage} de {totalPages}</p>
+                <div className="flex justify-between items-center bg-card border border-border p-4 rounded-2xl shadow-sm">
+                    <p className="text-xs font-black text-muted-foreground uppercase tracking-widest pl-2">Página {currentPage} de {totalPages}</p>
                     <div className="flex gap-2">
                         <Button
                             variant="outline"

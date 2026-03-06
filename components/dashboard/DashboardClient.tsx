@@ -37,7 +37,7 @@ interface DashboardClientProps {
     }
 }
 
-const COLORS = ['#6B8F71', '#4C6A56', '#8FBF9A', '#A3C2A9', '#5D7A66', '#3D5545', '#7DA185', '#B5D1BC', '#435D4C', '#2E4034']
+const COLORS = ['#0A4174', '#49769F', '#4E8EA2', '#6EA2B3', '#7BBDE8', '#BDD8E9', '#001D39', '#003366', '#004080', '#0059b3']
 
 export default function DashboardClient({ stats }: DashboardClientProps) {
     const container = {
@@ -56,10 +56,10 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
     }
 
     const metricCards = [
-        { title: "Total Registrados", value: stats.total, icon: Users, color: "bg-zinc-100 text-zinc-900 border-zinc-200" },
-        { title: "Activos", value: stats.activos, icon: UserCheck, color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-        { title: "Jubilados", value: stats.jubilados, icon: UserMinus, color: "bg-amber-50 text-amber-700 border-amber-100" },
-        { title: "Con Hijos < 12", value: stats.conHijos, icon: Baby, color: "bg-blue-50 text-blue-700 border-blue-100" },
+        { title: "Total Registrados", value: stats.total, icon: Users, color: "text-primary-900 dark:text-white" },
+        { title: "Activos", value: stats.activos, icon: UserCheck, color: "text-primary-800 dark:text-primary-400" },
+        { title: "Jubilados", value: stats.jubilados, icon: UserMinus, color: "text-primary-700 dark:text-primary-500" },
+        { title: "Con Hijos < 12", value: stats.conHijos, icon: Baby, color: "text-primary-600 dark:text-primary-200" },
     ]
 
     return (
@@ -72,15 +72,15 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {metricCards.map((card, i) => (
                     <motion.div key={i} variants={item}>
-                        <Card className={`rounded-3xl border shadow-sm transition-all hover:shadow-md ${card.color}`}>
+                        <Card className={`glass-card hover:-translate-y-1 ${card.color}`}>
                             <CardContent className="p-6">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">{card.title}</p>
-                                        <h3 className="text-3xl font-black">{card.value}</h3>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-1">{card.title}</p>
+                                        <h3 className="text-4xl font-black tracking-tighter">{card.value}</h3>
                                     </div>
-                                    <div className={`p-2 rounded-xl bg-white/50 backdrop-blur-sm border border-white`}>
-                                        <card.icon className="h-5 w-5" />
+                                    <div className={`p-3 rounded-2xl bg-primary-800/10 dark:bg-primary-800/20 border border-primary-800/10`}>
+                                        <card.icon className="h-6 w-6" />
                                     </div>
                                 </div>
                             </CardContent>
@@ -91,8 +91,8 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <motion.div variants={item}>
-                    <Card className="bg-card border-border shadow-sm overflow-hidden">
-                        <CardHeader className="pb-2 border-b border-zinc-50 dark:border-zinc-900 mx-6 px-0 pt-8">
+                    <Card className="glass-card overflow-hidden">
+                        <CardHeader className="pb-2 border-b border-border mx-6 px-0 pt-8">
                             <div className="flex justify-between items-center">
                                 <div>
                                     <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -106,7 +106,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                             <div className="h-[350px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={stats.stats.adscDistrib} layout="vertical" margin={{ left: 40, right: 20 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" className="opacity-10" />
                                         <XAxis type="number" hide />
                                         <YAxis
                                             dataKey="name"
@@ -120,9 +120,9 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                                         <Tooltip cursor={{ fill: 'transparent' }} content={({ active, payload }) => {
                                             if (active && payload && payload.length) {
                                                 return (
-                                                    <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-2xl shadow-xl">
-                                                        <p className="text-xs text-zinc-400 font-bold mb-1 uppercase">{payload[0].payload.name}</p>
-                                                        <p className="text-lg font-black text-white">{payload[0].value} <span className="text-[10px] uppercase text-zinc-500 ml-1">TRABAJADORES</span></p>
+                                                    <div className="glass-card p-3 shadow-xl">
+                                                        <p className="text-xs text-muted-foreground font-bold mb-1 uppercase">{payload[0].payload.name}</p>
+                                                        <p className="text-lg font-black text-foreground">{payload[0].value} <span className="text-[10px] uppercase text-muted-foreground ml-1">TRABAJADORES</span></p>
                                                     </div>
                                                 )
                                             }
@@ -130,7 +130,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                                         }} />
                                         <Bar
                                             dataKey="count"
-                                            fill="#18181b"
+                                            fill="#0A4174"
                                             radius={[0, 10, 10, 0]}
                                             barSize={20}
                                         >
@@ -146,8 +146,8 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                 </motion.div>
 
                 <motion.div variants={item}>
-                    <Card className="bg-card border-border shadow-sm overflow-hidden">
-                        <CardHeader className="pb-2 border-b border-zinc-50 dark:border-zinc-900 mx-6 px-0 pt-8">
+                    <Card className="glass-card overflow-hidden">
+                        <CardHeader className="pb-2 border-b border-border mx-6 px-0 pt-8">
                             <CardTitle className="text-xl font-bold flex items-center gap-2">
                                 <PieChartIcon className="h-5 w-5 text-primary" /> Resumen General
                             </CardTitle>
@@ -168,9 +168,9 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
-                                            <Cell fill="#6B8F71" />
-                                            <Cell fill="#8FBF9A" />
-                                            <Cell fill="#e2e8f0" />
+                                            <Cell fill="#0A4174" />
+                                            <Cell fill="#49769F" />
+                                            <Cell fill="#BDD8E9" />
                                         </Pie>
                                         <Tooltip />
                                     </PieChart>
@@ -178,19 +178,19 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                             </div>
                             <div className="grid grid-cols-3 gap-6 w-full mt-4">
                                 <div className="flex flex-col items-center">
-                                    <div className="w-3 h-3 rounded-full bg-[#6B8F71] mb-2"></div>
-                                    <span className="text-[10px] font-bold text-zinc-500 uppercase">Activos</span>
-                                    <span className="text-lg font-black">{Math.round((stats.activos / stats.total) * 100) || 0}%</span>
+                                    <div className="w-3 h-3 rounded-full bg-[#0A4174] mb-2"></div>
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase">Activos</span>
+                                    <span className="text-xl font-black text-primary">{Math.round((stats.activos / stats.total) * 100) || 0}%</span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <div className="w-3 h-3 rounded-full bg-[#8FBF9A] mb-2"></div>
-                                    <span className="text-[10px] font-bold text-zinc-500 uppercase">Jubilados</span>
-                                    <span className="text-lg font-black">{Math.round((stats.jubilados / stats.total) * 100) || 0}%</span>
+                                    <div className="w-3 h-3 rounded-full bg-[#49769F] mb-2"></div>
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase">Jubilados</span>
+                                    <span className="text-xl font-black text-primary-700">{Math.round((stats.jubilados / stats.total) * 100) || 0}%</span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <div className="w-3 h-3 rounded-full bg-zinc-200 mb-2"></div>
-                                    <span className="text-[10px] font-bold text-zinc-500 uppercase">Inactivos</span>
-                                    <span className="text-lg font-black">{Math.round(((stats.total - stats.activos - stats.jubilados) / stats.total) * 100) || 0}%</span>
+                                    <div className="w-3 h-3 rounded-full bg-[#BDD8E9] mb-2"></div>
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase">Inactivos</span>
+                                    <span className="text-xl font-black text-primary-400">{Math.round(((stats.total - stats.activos - stats.jubilados) / stats.total) * 100) || 0}%</span>
                                 </div>
                             </div>
                         </CardContent>

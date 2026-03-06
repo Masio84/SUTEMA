@@ -105,7 +105,7 @@ export default function ConfigPageClient() {
 
     if (isAdmin === null) return (
         <div className="h-screen w-full flex items-center justify-center">
-            <Loader2 className="animate-spin h-10 w-10 text-zinc-400" />
+            <Loader2 className="animate-spin h-10 w-10 text-muted-foreground/50" />
         </div>
     )
 
@@ -114,24 +114,24 @@ export default function ConfigPageClient() {
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="relative w-full md:max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Buscar usuarios..."
-                            className="pl-11 h-12 rounded-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm"
+                            className="pl-11 h-12 rounded-2xl border-border bg-background shadow-sm focus-glow"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
                     <Button
                         onClick={() => { setSelectedUser(null); setIsDialogOpen(true) }}
-                        className="rounded-2xl h-12 px-6 gap-2 bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-950 font-bold border-zinc-200 shadow-xl shadow-zinc-200 dark:shadow-none"
+                        className="rounded-2xl h-12 px-6 gap-2 bg-primary text-primary-foreground font-bold shadow-xl shadow-primary/10"
                     >
                         <UserPlus className="h-4 w-4" /> Nuevo Usuario
                     </Button>
                 </div>
 
-                <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
-                    <CardHeader className="pt-8 px-8 flex flex-row items-center gap-4 border-b border-zinc-50 dark:border-zinc-900">
+                <Card className="glass-card shadow-sm overflow-hidden border-none rounded-[2.5rem]">
+                    <CardHeader className="pt-8 px-8 flex flex-row items-center gap-4 border-b border-border">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
                             <ShieldCheck className="h-6 w-6" />
                         </div>
@@ -139,14 +139,14 @@ export default function ConfigPageClient() {
                             <CardTitle className="text-xl font-bold">Usuarios Registrados</CardTitle>
                             <CardDescription>Gestión de roles y accesos al sistema sindical.</CardDescription>
                         </div>
-                        <Badge variant="outline" className="rounded-full px-4 h-8 font-bold border-zinc-200 text-[10px] tracking-widest uppercase">
+                        <Badge variant="outline" className="rounded-full px-4 h-8 font-bold border-border text-[10px] tracking-widest uppercase">
                             {filteredUsers.length} TOTAL
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
-                                <TableRow className="hover:bg-transparent border-zinc-50 dark:border-zinc-900">
+                                <TableRow className="hover:bg-transparent border-border">
                                     <TableHead className="px-8 font-bold py-6">Usuario</TableHead>
                                     <TableHead className="font-bold">Rol</TableHead>
                                     <TableHead className="font-bold">Estatus</TableHead>
@@ -157,12 +157,12 @@ export default function ConfigPageClient() {
                                 {isLoading ? (
                                     <TableRow>
                                         <TableCell colSpan={4} className="h-48 text-center pt-10">
-                                            <Loader2 className="animate-spin h-8 w-8 text-zinc-200 mx-auto" />
+                                            <Loader2 className="animate-spin h-8 w-8 text-muted-foreground/30 mx-auto" />
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredUsers.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="h-48 text-center text-zinc-500 font-bold">No se encontraron usuarios</TableCell>
+                                        <TableCell colSpan={4} className="h-48 text-center text-muted-foreground font-bold">No se encontraron usuarios</TableCell>
                                     </TableRow>
                                 ) : (
                                     filteredUsers.map((user, i) => (
@@ -171,12 +171,12 @@ export default function ConfigPageClient() {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: i * 0.05 }}
                                             key={user.id}
-                                            className="group border-zinc-50 dark:border-zinc-900 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/40"
+                                            className="group border-border transition-colors hover:bg-muted/50"
                                         >
                                             <TableCell className="px-8 py-5">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-zinc-900 dark:text-zinc-100">{user.nombre_completo}</span>
-                                                    <span className="text-xs text-zinc-500">{user.email || '—'}</span>
+                                                    <span className="font-bold text-foreground">{user.nombre_completo}</span>
+                                                    <span className="text-xs text-muted-foreground">{user.email || '—'}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -195,24 +195,24 @@ export default function ConfigPageClient() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-10 w-10 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                                                    className="h-10 w-10 rounded-xl hover:bg-muted"
                                                     title="Restablecer Contraseña"
                                                     onClick={() => user.email && handleReset(user.email)}
                                                 >
-                                                    <Lock className="h-4 w-4 text-zinc-500" />
+                                                    <Lock className="h-4 w-4 text-muted-foreground" />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-10 w-10 border border-zinc-100 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                                                    className="h-10 w-10 border border-border rounded-xl hover:bg-muted"
                                                     onClick={() => { setSelectedUser(user); setIsDialogOpen(true) }}
                                                 >
-                                                    <UserCog className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                                                    <UserCog className="h-4 w-4 text-foreground/60" />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-10 w-10 rounded-xl hover:bg-red-50 hover:text-red-500 text-zinc-400"
+                                                    className="h-10 w-10 rounded-xl hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
                                                     onClick={() => handleDelete(user)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -227,13 +227,13 @@ export default function ConfigPageClient() {
                 </Card>
 
                 {/* Instructions Alert */}
-                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 p-6 rounded-[2rem] flex gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold shrink-0">
+                <div className="bg-primary-800/5 border border-primary-800/10 p-6 rounded-[2rem] flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary-800/10 text-primary-800 flex items-center justify-center font-bold shrink-0">
                         <Key className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="font-bold text-amber-900 dark:text-amber-200">Sobre la Gestión de Usuarios</p>
-                        <p className="text-sm text-amber-800 dark:text-amber-400 mt-1">
+                        <p className="font-bold text-primary-900 dark:text-primary-200">Sobre la Gestión de Usuarios</p>
+                        <p className="text-sm text-primary-800/70 dark:text-primary-400/70 mt-1">
                             La creación de nuevos usuarios requiere el envío de una invitación por correo. Los usuarios creados tendrán una contraseña temporal por defecto. Se recomienda que los capturistas cambien su contraseña en su primer inicio de sesión.
                         </p>
                     </div>

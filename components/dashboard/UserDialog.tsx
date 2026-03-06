@@ -94,7 +94,7 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="rounded-[2rem] border-zinc-200 dark:border-zinc-800">
+            <DialogContent className="rounded-[2rem] border-border glass-card !bg-white dark:!bg-primary-950/90 max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-black">{user ? 'Editar Usuario' : 'Crear Usuario'}</DialogTitle>
                     <DialogDescription>
@@ -104,11 +104,11 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
 
                 <form onSubmit={handleSubmit} className="space-y-6 pt-4">
                     <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Nombre Completo</Label>
+                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80">Nombre Completo</Label>
                         <Input
                             required
                             placeholder="Juan Pérez"
-                            className="h-12 rounded-xl"
+                            className="h-12 rounded-xl border-border bg-background focus-glow"
                             value={formData.nombre_completo}
                             onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}
                         />
@@ -116,12 +116,12 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
 
                     {!user && (
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Correo Electrónico</Label>
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80">Correo Electrónico</Label>
                             <Input
                                 required
                                 type="email"
                                 placeholder="juan@sutema.com"
-                                className="h-12 rounded-xl"
+                                className="h-12 rounded-xl border-border bg-background focus-glow"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
@@ -130,9 +130,9 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Rol del Sistema</Label>
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80">Rol del Sistema</Label>
                             <Select value={formData.rol} onValueChange={(v: any) => setFormData({ ...formData, rol: v })}>
-                                <SelectTrigger className="h-12 rounded-xl">
+                                <SelectTrigger className="h-12 rounded-xl border-border bg-background focus-glow">
                                     <SelectValue placeholder="Seleccionar rol" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -144,7 +144,7 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
 
                         {user && (
                             <div className="space-y-2 flex flex-col justify-end">
-                                <div className="flex items-center space-x-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-3 rounded-xl h-12">
+                                <div className="flex items-center space-x-2 bg-muted/30 border border-border p-3 rounded-xl h-12">
                                     <Switch
                                         id="activo"
                                         checked={formData.activo}
@@ -158,7 +158,7 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
 
                     <DialogFooter className="pt-4">
                         <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl font-bold">Cancelar</Button>
-                        <Button type="submit" className="rounded-xl h-12 px-8 font-bold bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-950 shadow-lg shadow-zinc-200 dark:shadow-none" disabled={isLoading}>
+                        <Button type="submit" className="rounded-xl h-12 px-8 font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/20" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {user ? 'Guardar Cambios' : 'Crear Usuario'}
                         </Button>

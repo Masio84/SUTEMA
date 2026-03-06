@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { exportToExcel, exportToPDF, printTable } from '@/lib/export-utils'
 
-const PER_PAGE = 20
+export const PER_PAGE = 20
 
 export default function ConsultasPage() {
     const [workers, setWorkers] = useState<Worker[]>([])
@@ -153,12 +153,12 @@ export default function ConsultasPage() {
         <AppLayout title="Consultas" subtitle="Gestión Avanzada de Trabajadores">
             <div className="space-y-6">
                 {/* Top bar */}
-                <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
-                    <div className="relative w-full lg:max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <div className="flex flex-col lg:flex-row gap-4 items-center justify-between glass-card p-6">
+                    <div className="relative w-full lg:max-w-md group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary-900/60 group-focus-within:text-primary transition-colors" />
                         <Input
-                            placeholder="Buscar trabajador por nombre, CURP, teléfono, municipio o sección..."
-                            className="pl-11 h-12 rounded-2xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 focus:ring-zinc-400/20"
+                            placeholder="Buscar trabajador por nombre, CURP, teléfono..."
+                            className="pl-11 h-12 rounded-2xl border-border bg-background focus:ring-primary/20 focus:border-primary/40 placeholder:text-muted-foreground text-foreground font-medium"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                         />
@@ -167,7 +167,7 @@ export default function ConsultasPage() {
                     <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
                         <Button
                             variant={showFilters ? "secondary" : "outline"}
-                            className="rounded-2xl h-12 gap-2 border-zinc-200 dark:border-zinc-800 px-5"
+                            className="rounded-2xl h-12 gap-2 border-border px-5"
                             onClick={() => setShowFilters(!showFilters)}
                         >
                             <SlidersHorizontal className="h-4 w-4" /> Filtros {showFilters ? 'activos' : ''}
@@ -175,12 +175,12 @@ export default function ConsultasPage() {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="rounded-2xl h-12 gap-2 border-zinc-200 dark:border-zinc-800 px-5">
+                                <Button variant="outline" className="rounded-2xl h-12 gap-2 border-border px-5">
                                     <Download className="h-4 w-4" /> Exportar
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-2xl border-zinc-200 dark:border-zinc-800 p-2">
-                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Formatos disponibles</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" className="rounded-2xl border-border p-2">
+                                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-primary-900/60 dark:text-primary-200/60">Formatos disponibles</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={handleExportExcel} className="rounded-xl gap-2 font-bold py-3"><FileSpreadsheet className="h-4 w-4 text-emerald-500" /> Excel (.xlsx)</DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleExportPDF} className="rounded-xl gap-2 font-bold py-3"><FileText className="h-4 w-4 text-red-500" /> Documento PDF</DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -188,7 +188,7 @@ export default function ConsultasPage() {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <Button className="rounded-2xl h-12 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-950 gap-2 px-6 font-bold" onClick={() => router.push('/registro')}>
+                        <Button className="rounded-2xl h-12 bg-primary dark:bg-primary dark:text-primary-foreground gap-2 px-6 font-bold" onClick={() => router.push('/registro')}>
                             <Plus className="h-4 w-4" /> Nuevo
                         </Button>
                     </div>
@@ -203,12 +203,12 @@ export default function ConsultasPage() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="bg-card p-8 rounded-[2rem] border border-border shadow-inner space-y-8">
+                            <div className="glass-card p-8 space-y-8 shadow-inner">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                                     <div className="space-y-3">
-                                        <Label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Adscripción</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary-900/60 dark:text-primary-200/60 ml-1">Adscripción</Label>
                                         <Select value={selectedAdscripcion} onValueChange={(v) => { setSelectedAdscripcion(v); setPage(1) }}>
-                                            <SelectTrigger className="h-12 rounded-xl border-zinc-200 dark:border-zinc-800">
+                                            <SelectTrigger className="h-12 rounded-xl border-border">
                                                 <SelectValue placeholder="Todas" />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-xl">
@@ -221,9 +221,9 @@ export default function ConsultasPage() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <Label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Estatus Laboral</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary-900/60 dark:text-primary-200/60 ml-1">Estatus Laboral</Label>
                                         <Select value={selectedEstatus} onValueChange={(v) => { setSelectedEstatus(v); setPage(1) }}>
-                                            <SelectTrigger className="h-12 rounded-xl border-zinc-200 dark:border-zinc-800">
+                                            <SelectTrigger className="h-12 rounded-xl border-border">
                                                 <SelectValue placeholder="Cualquiera" />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-xl">
@@ -236,20 +236,20 @@ export default function ConsultasPage() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <Label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Antigüedad (Años)</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary-900/60 dark:text-primary-200/60 ml-1">Antigüedad (Años)</Label>
                                         <div className="flex items-center gap-2">
                                             <Input
                                                 type="number"
                                                 placeholder="Min"
-                                                className="h-12 rounded-xl text-center"
+                                                className="h-12 rounded-xl text-center border-border"
                                                 value={minSeniority}
                                                 onChange={(e) => { setMinSeniority(e.target.value); setPage(1) }}
                                             />
-                                            <span className="text-zinc-400">—</span>
+                                            <span className="text-primary-900/30 dark:text-primary-200/30">—</span>
                                             <Input
                                                 type="number"
                                                 placeholder="Max"
-                                                className="h-12 rounded-xl text-center"
+                                                className="h-12 rounded-xl text-center border-border"
                                                 value={maxSeniority}
                                                 onChange={(e) => { setMaxSeniority(e.target.value); setPage(1) }}
                                             />
@@ -257,7 +257,7 @@ export default function ConsultasPage() {
                                     </div>
 
                                     <div className="flex flex-col justify-end pb-2">
-                                        <div className="flex items-center space-x-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl">
+                                        <div className="flex items-center space-x-3 bg-background border border-border p-4 rounded-xl">
                                             <Checkbox
                                                 id="hijos"
                                                 checked={hasHijos}
@@ -269,7 +269,7 @@ export default function ConsultasPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex border-t border-zinc-50 dark:border-zinc-900 pt-6 justify-between items-center">
+                                <div className="flex border-t border-border pt-6 justify-between items-center">
                                     <p className="text-xs font-bold text-zinc-400">{totalCount} registros encontrados</p>
                                     <Button
                                         variant="ghost"
@@ -290,7 +290,7 @@ export default function ConsultasPage() {
                         <motion.div
                             animate={{ rotate: 360 }}
                             transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-                            className="w-12 h-12 border-4 border-zinc-200 border-t-zinc-900 dark:border-t-zinc-100 rounded-full mb-4"
+                            className="w-12 h-12 border-4 border-muted border-t-primary rounded-full mb-4"
                         />
                         <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Actualizando datos...</p>
                     </div>
