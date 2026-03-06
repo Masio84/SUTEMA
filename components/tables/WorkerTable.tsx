@@ -73,10 +73,10 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
 
     const getEstatusBadge = (estatus: string) => {
         switch (estatus) {
-            case 'Activo': return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800">Activo</Badge>
-            case 'Inactivo': return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800">Inactivo</Badge>
-            case 'Jubilado': return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800">Jubilado</Badge>
-            default: return <Badge variant="secondary">{estatus}</Badge>
+            case 'activo': return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800">Activo</Badge>
+            case 'inactivo': return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800">Inactivo</Badge>
+            case 'jubilado': return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800">Jubilado</Badge>
+            default: return <Badge variant="secondary">{estatus.charAt(0).toUpperCase() + estatus.slice(1)}</Badge>
         }
     }
 

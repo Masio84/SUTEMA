@@ -228,9 +228,9 @@ export default function ConsultasPage() {
                                             </SelectTrigger>
                                             <SelectContent className="rounded-xl">
                                                 <SelectItem value="all">Cualquier Estatus</SelectItem>
-                                                <SelectItem value="Activo">Activo</SelectItem>
-                                                <SelectItem value="Jubilado">Jubilado</SelectItem>
-                                                <SelectItem value="Inactivo">Inactivo</SelectItem>
+                                                <SelectItem value="activo">Activo</SelectItem>
+                                                <SelectItem value="jubilado">Jubilado</SelectItem>
+                                                <SelectItem value="inactivo">Inactivo</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>

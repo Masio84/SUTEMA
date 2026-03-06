@@ -21,8 +21,13 @@ const navItems = [
 ]
 
 export default function AppLayout({ children, title, subtitle }: { children: React.ReactNode, title: string, subtitle?: string }) {
+    const [isMounted, setIsMounted] = React.useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const pathname = usePathname()
+
+    React.useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const NavLinks = () => (
         <nav className="space-y-1">
@@ -96,49 +101,51 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
                     <div className="flex items-center gap-4">
                         {/* Mobile Menu Button */}
                         <div className="md:hidden">
-                            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                                <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground mr-2">
-                                        <Menu className="h-6 w-6" />
-                                        <span className="sr-only">Toggle mobile menu</span>
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent side="left" className="w-72 bg-primary-900 border-r border-white/5 p-8 flex flex-col">
-                                    <SheetHeader className="mb-8">
-                                        <SheetTitle className="text-white text-center">
-                                            <div className="flex flex-col items-center">
-                                                <Image
-                                                    src="/logo-blanco.png"
-                                                    alt="SUTEMA Logo"
-                                                    width={150}
-                                                    height={50}
-                                                    className="object-contain drop-shadow-lg mb-4"
-                                                    priority
-                                                />
-                                                <p className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">
-                                                    Gestión Sindical
-                                                </p>
-                                            </div>
-                                        </SheetTitle>
-                                    </SheetHeader>
-                                    <div className="space-y-8 flex-1">
-                                        <div>
-                                            <p className="px-4 text-[10px] font-bold text-white/30 uppercase tracking-widest mb-4">Menú Principal</p>
-                                            <NavLinks />
-                                        </div>
-                                    </div>
-                                    <div className="pt-6 mt-6 border-t border-white/10">
-                                        <Button
-                                            onClick={() => signOut()}
-                                            variant="ghost"
-                                            className="w-full justify-start text-white/70 hover:bg-white/5 hover:text-white font-bold h-12 rounded-xl"
-                                        >
-                                            <LogOut className="h-5 w-5 mr-3" />
-                                            Cerrar Sesión
+                            {isMounted && (
+                                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                                    <SheetTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground mr-2">
+                                            <Menu className="h-6 w-6" />
+                                            <span className="sr-only">Toggle mobile menu</span>
                                         </Button>
-                                    </div>
-                                </SheetContent>
-                            </Sheet>
+                                    </SheetTrigger>
+                                    <SheetContent side="left" className="w-72 bg-primary-900 border-r border-white/5 p-8 flex flex-col">
+                                        <SheetHeader className="mb-8">
+                                            <SheetTitle className="text-white text-center">
+                                                <div className="flex flex-col items-center">
+                                                    <Image
+                                                        src="/logo-blanco.png"
+                                                        alt="SUTEMA Logo"
+                                                        width={150}
+                                                        height={50}
+                                                        className="object-contain drop-shadow-lg mb-4"
+                                                        priority
+                                                    />
+                                                    <p className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">
+                                                        Gestión Sindical
+                                                    </p>
+                                                </div>
+                                            </SheetTitle>
+                                        </SheetHeader>
+                                        <div className="space-y-8 flex-1">
+                                            <div>
+                                                <p className="px-4 text-[10px] font-bold text-white/30 uppercase tracking-widest mb-4">Menú Principal</p>
+                                                <NavLinks />
+                                            </div>
+                                        </div>
+                                        <div className="pt-6 mt-6 border-t border-white/10">
+                                            <Button
+                                                onClick={() => signOut()}
+                                                variant="ghost"
+                                                className="w-full justify-start text-white/70 hover:bg-white/5 hover:text-white font-bold h-12 rounded-xl"
+                                            >
+                                                <LogOut className="h-5 w-5 mr-3" />
+                                                Cerrar Sesión
+                                            </Button>
+                                        </div>
+                                    </SheetContent>
+                                </Sheet>
+                            )}
                         </div>
 
                         <motion.div

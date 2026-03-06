@@ -16,7 +16,7 @@ export const workerSchema = z.object({
     fecha_ingreso: z.date({
         message: "Fecha de ingreso es requerida",
     }),
-    estatus: z.enum(["Activo", "Inactivo", "Baja", "Jubilado"]),
+    estatus: z.enum(["activo", "inactivo", "baja", "jubilado"]),
 
     // Información Familiar
     tiene_hijos: z.boolean().default(false),

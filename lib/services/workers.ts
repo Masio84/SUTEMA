@@ -144,8 +144,8 @@ export async function getDashboardStats() {
 
     const queries = [
         supabase.from('trabajadores').select('*', { count: 'exact', head: true }),
-        supabase.from('trabajadores').select('*', { count: 'exact', head: true }).eq('estatus', 'Activo'),
-        supabase.from('trabajadores').select('*', { count: 'exact', head: true }).eq('estatus', 'Jubilado'),
+        supabase.from('trabajadores').select('*', { count: 'exact', head: true }).eq('estatus', 'activo'),
+        supabase.from('trabajadores').select('*', { count: 'exact', head: true }).eq('estatus', 'jubilado'),
         supabase.from('trabajadores').select('*', { count: 'exact', head: true }).gt('hijos_menores_12', 0),
         supabase.from('adscripciones').select('nombre, trabajadores(id)')
     ]

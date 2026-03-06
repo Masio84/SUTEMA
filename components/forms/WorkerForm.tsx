@@ -78,7 +78,7 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
             adscripcion_id: "",
             unidad_id: "",
             fecha_ingreso: new Date(),
-            estatus: "Activo",
+            estatus: "activo",
             tiene_hijos: false,
             hijos_menores_12: 0,
             calle: "",
@@ -358,10 +358,10 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Activo">Activo</SelectItem>
-                                                <SelectItem value="Inactivo">Inactivo</SelectItem>
-                                                <SelectItem value="Baja">Baja</SelectItem>
-                                                <SelectItem value="Jubilado">Jubilado</SelectItem>
+                                                <SelectItem value="activo">Activo</SelectItem>
+                                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                                                <SelectItem value="baja">Baja</SelectItem>
+                                                <SelectItem value="jubilado">Jubilado</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />

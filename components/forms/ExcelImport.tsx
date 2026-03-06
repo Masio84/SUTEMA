@@ -9,8 +9,18 @@ import { importFromExcel } from '@/app/actions/import'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
 
 export default function ExcelImport() {
+    const [previewData, setPreviewData] = useState<any[] | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
     const [fileName, setFileName] = useState<string | null>(null)
     const [progress, setProgress] = useState<'idle' | 'parsing' | 'uploading' | 'success' | 'error'>('idle')
@@ -81,22 +91,8 @@ export default function ExcelImport() {
                 const sanitizedRows = JSON.parse(JSON.stringify(cleanRows))
                 console.log("Rows ready for import:", sanitizedRows)
 
-                setProgress('uploading')
-                const result = await importFromExcel(sanitizedRows)
-
-                if (result.success) {
-                    toast.success("Importación finalizada")
-                    setSummary({
-                        total: result.total || 0,
-                        successful: result.successful || 0,
-                        duplicates: result.duplicates || 0,
-                        validationSkipped: result.validationSkipped || 0
-                    })
-                    setProgress('success')
-                } else {
-                    toast.error(result.error)
-                    setProgress('error')
-                }
+                setProgress('idle')
+                setPreviewData(sanitizedRows)
             } catch (err) {
                 console.error(err)
                 toast.error("Error al leer el archivo")
@@ -132,6 +128,151 @@ export default function ExcelImport() {
         setIsDragging(false)
         const file = e.dataTransfer.files?.[0]
         if (file) handleFile(file)
+    }
+
+    const handleConfirmImport = async () => {
+        if (!previewData) return
+        setIsProcessing(true)
+        setProgress('uploading')
+
+        try {
+            const result = await importFromExcel(previewData)
+
+            if (result.success) {
+                toast.success("Importación finalizada")
+                setSummary({
+                    total: result.total || 0,
+                    successful: result.successful || 0,
+                    duplicates: result.duplicates || 0,
+                    validationSkipped: result.validationSkipped || 0
+                })
+                setProgress('success')
+                setPreviewData(null) // Hide preview table on success
+            } else {
+                toast.error(result.error)
+                setProgress('error')
+            }
+        } catch (error) {
+            toast.error("Error inesperado en la importación")
+            setProgress('error')
+        } finally {
+            setIsProcessing(false)
+        }
+    }
+
+    const handleDiscard = () => {
+        setPreviewData(null)
+        setFileName(null)
+        setProgress('idle')
+        setSummary(null)
+    }
+
+    const updateCell = (index: number, key: string, value: string) => {
+        if (!previewData) return
+        const newData = [...previewData]
+        newData[index] = { ...newData[index], [key]: value }
+        setPreviewData(newData)
+    }
+
+    if (previewData) {
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
+                    <div>
+                        <h3 className="text-xl font-black flex items-center gap-2">
+                            <FileSpreadsheet className="h-6 w-6 text-primary" />
+                            Vista Previa de Datos
+                        </h3>
+                        <p className="text-sm font-medium text-muted-foreground mt-1">
+                            Revisa y corrige los datos antes de importarlos a la base de datos. Se encontraron <strong className="text-foreground">{previewData.length}</strong> registros.
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={handleDiscard}
+                            disabled={isProcessing}
+                            className="rounded-xl h-12 px-6 font-bold"
+                        >
+                            Descartar
+                        </Button>
+                        <Button
+                            onClick={handleConfirmImport}
+                            disabled={isProcessing}
+                            className="rounded-xl h-12 px-6 font-bold gap-2 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                        >
+                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
+                            {isProcessing ? "Importando..." : "Cargar Registros"}
+                        </Button>
+                    </div>
+                </div>
+
+                <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader className="bg-zinc-50 dark:bg-zinc-900/50">
+                                <TableRow className="hover:bg-transparent border-zinc-200 dark:border-zinc-800">
+                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap px-6 py-4">#</TableHead>
+                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">CURP</TableHead>
+                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">Nombre (s)</TableHead>
+                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">A. Paterno</TableHead>
+                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4">Área / Adscripción</TableHead>
+                                    <TableHead className="font-black uppercase tracking-widest text-[10px] whitespace-nowrap py-4 max-w-[120px]">Estatus</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {previewData.slice(0, 100).map((row, idx) => (
+                                    <TableRow key={idx} className="group border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/20">
+                                        <TableCell className="font-mono text-xs text-muted-foreground px-6 py-3">{idx + 1}</TableCell>
+                                        <TableCell className="py-2">
+                                            <Input
+                                                value={row.CURP || ''}
+                                                onChange={(e) => updateCell(idx, 'CURP', e.target.value)}
+                                                className="h-8 text-xs font-mono uppercase bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[160px]"
+                                            />
+                                        </TableCell>
+                                        <TableCell className="py-2">
+                                            <Input
+                                                value={row.NOMBRE || ''}
+                                                onChange={(e) => updateCell(idx, 'NOMBRE', e.target.value)}
+                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[120px]"
+                                            />
+                                        </TableCell>
+                                        <TableCell className="py-2">
+                                            <Input
+                                                value={row['PRIMER APELLIDO'] || row['APELLIDO PATERNO'] || ''}
+                                                onChange={(e) => updateCell(idx, row['PRIMER APELLIDO'] ? 'PRIMER APELLIDO' : 'APELLIDO PATERNO', e.target.value)}
+                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[120px]"
+                                            />
+                                        </TableCell>
+                                        <TableCell className="py-2">
+                                            <Input
+                                                value={row.AREA || ''}
+                                                onChange={(e) => updateCell(idx, 'AREA', e.target.value)}
+                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2 min-w-[200px]"
+                                            />
+                                        </TableCell>
+                                        <TableCell className="py-2 max-w-[120px]">
+                                            <Input
+                                                value={row.ESTATUS || ''}
+                                                onChange={(e) => updateCell(idx, 'ESTATUS', e.target.value)}
+                                                placeholder="Activo"
+                                                className="h-8 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2"
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    {previewData.length > 100 && (
+                        <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 text-center border-t border-zinc-200 dark:border-zinc-800">
+                            <span className="text-xs font-bold text-muted-foreground">Mostrando los primeros 100 registros de {previewData.length}</span>
+                        </div>
+                    )}
+                </Card>
+            </div>
+        )
     }
 
     return (
