@@ -31,6 +31,14 @@ import UserDialog from '@/components/dashboard/UserDialog'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function ConfigPageClient() {
     const [users, setUsers] = useState<UserSystem[]>([])
@@ -39,6 +47,13 @@ export default function ConfigPageClient() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<UserSystem | null>(null)
     const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+    const [confirmConfig, setConfirmConfig] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+        variant: 'default' | 'destructive';
+    }>({ open: false, title: '', description: '', onConfirm: () => { }, variant: 'default' })
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
     const supabase = createClient()
     const router = useRouter()
@@ -77,38 +92,52 @@ export default function ConfigPageClient() {
         setIsLoading(false)
     }
 
-    const handleDelete = async (user: UserSystem) => {
-        if (confirm(`¿Está seguro de eliminar a ${user.nombre}?`)) {
-            setActionLoadingId(user.id)
-            try {
-                const result = await deleteUser(user.id)
-                if (result.error) {
-                    toast.error(result.error)
-                } else {
-                    toast.success("Usuario eliminado")
-                    fetchUsers()
+    const handleDelete = (user: UserSystem) => {
+        setConfirmConfig({
+            open: true,
+            title: `¿Eliminar a ${user.nombre}?`,
+            description: "Esta acción no se puede deshacer y el usuario perderá el acceso al sistema de forma inmediata.",
+            variant: 'destructive',
+            onConfirm: async () => {
+                setActionLoadingId(user.id)
+                try {
+                    const result = await deleteUser(user.id)
+                    if (result.error) {
+                        toast.error(result.error)
+                    } else {
+                        toast.success("Usuario eliminado")
+                        fetchUsers()
+                    }
+                } finally {
+                    setActionLoadingId(null)
+                    setConfirmConfig(prev => ({ ...prev, open: false }))
                 }
-            } finally {
-                setActionLoadingId(null)
             }
-        }
+        })
     }
 
-    const handleReset = async (user: UserSystem) => {
+    const handleReset = (user: UserSystem) => {
         if (!user.usuario) return
-        if (confirm("Se enviará un enlace de recuperación al correo. ¿Continuar?")) {
-            setActionLoadingId(user.id)
-            try {
-                const result = await resetPassword(user.usuario)
-                if (result.error) {
-                    toast.error(result.error)
-                } else {
-                    toast.success(result.message || "Enlace enviado")
+        setConfirmConfig({
+            open: true,
+            title: "Restablecer Contraseña",
+            description: `Se enviará un enlace de recuperación al correo ${user.usuario}. El usuario podrá asignar una nueva contraseña desde su bandeja de entrada.`,
+            variant: 'default',
+            onConfirm: async () => {
+                setActionLoadingId(user.id)
+                try {
+                    const result = await resetPassword(user.usuario!)
+                    if (result.error) {
+                        toast.error(result.error)
+                    } else {
+                        toast.success(result.message || "Enlace enviado")
+                    }
+                } finally {
+                    setActionLoadingId(null)
+                    setConfirmConfig(prev => ({ ...prev, open: false }))
                 }
-            } finally {
-                setActionLoadingId(null)
             }
-        }
+        })
     }
 
     const filteredUsers = users.filter(u =>
@@ -267,6 +296,37 @@ export default function ConfigPageClient() {
                     user={selectedUser}
                     onSuccess={fetchUsers}
                 />
+
+                {/* Confirm Action Dialog */}
+                <Dialog open={confirmConfig.open} onOpenChange={(v) => setConfirmConfig(prev => ({ ...prev, open: v }))}>
+                    <DialogContent className="rounded-[2rem] border-none shadow-2xl p-8">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-bold">{confirmConfig.title}</DialogTitle>
+                            <DialogDescription className="text-sm py-4">
+                                {confirmConfig.description}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="gap-2">
+                            <Button
+                                variant="outline"
+                                className="rounded-xl h-12"
+                                onClick={() => setConfirmConfig(prev => ({ ...prev, open: false }))}
+                                disabled={actionLoadingId !== null}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant={confirmConfig.variant === 'destructive' ? 'destructive' : 'default'}
+                                className="rounded-xl h-12 px-6 gap-2"
+                                onClick={confirmConfig.onConfirm}
+                                disabled={actionLoadingId !== null}
+                            >
+                                {actionLoadingId !== null && <Loader2 className="h-4 w-4 animate-spin" />}
+                                Confirmar
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     )
