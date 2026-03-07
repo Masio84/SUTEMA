@@ -5,10 +5,18 @@ import * as XLSX from 'xlsx'
 import { FileUp, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Wand2, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { importFromExcel } from '@/app/actions/import'
+import { importFromExcel, getAdscripcionesList } from '@/app/actions/import'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+import {
+    getOfficialAdscripcionName,
+    removeAccents,
+    toTitleCase,
+    normalizeSexo,
+    normalizeEstadoCivil,
+    normalizeEstatus
+} from '@/lib/utils/normalization'
 import {
     Table,
     TableBody,
@@ -22,37 +30,7 @@ import {
 // Local autocorrect helpers (mirrors server-side)
 // ─────────────────────────────────────────────
 
-const removeAccents = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-const toTitleCase = (s: string) =>
-    s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim()
-
-const normalizeSexo = (raw: string) => {
-    if (!raw) return ''
-    const s = removeAccents(raw.toLowerCase().trim())
-    if (/^(m|masc|masculine|hombre|h|masculino)/.test(s)) return 'Masculino'
-    if (/^(f|fem|femenino|feme|mujer|w|woman)/.test(s)) return 'Femenino'
-    return 'Otro'
-}
-
-const normalizeEstadoCivil = (raw: string) => {
-    if (!raw) return ''
-    const s = removeAccents(raw.toLowerCase().trim())
-    if (/^(sol|solt|solter|soltero|soltera)/.test(s)) return 'Soltero/a'
-    if (/^(cas|casad|casado|casada)/.test(s)) return 'Casado/a'
-    if (/^(div|divorc|divorciad|divorciado|divorciada)/.test(s)) return 'Divorciado/a'
-    if (/^(viu|viud|viudo|viuda)/.test(s)) return 'Viudo/a'
-    if (/^(uni|union libre|unio|uli|u\.l\.|ul)/.test(s)) return 'Unión Libre'
-    return raw
-}
-
-const normalizeEstatus = (raw: string) => {
-    if (!raw) return 'Activo'
-    const s = removeAccents(raw.toLowerCase().trim())
-    if (/jubil/.test(s)) return 'Jubilado'
-    if (/baja/.test(s)) return 'Baja'
-    if (/inact/.test(s)) return 'Inactivo'
-    return 'Activo'
-}
+// Redundant local helpers removed in favor of @/lib/utils/normalization
 
 // Possible column header names per field (Excel may use various names)
 const get = (row: any, ...keys: string[]): string => {
@@ -133,6 +111,18 @@ export default function ExcelImport() {
     const [invalidDetails, setInvalidDetails] = useState<{ fila: number; nombre: string; curp: string; motivo: string }[]>([])
     const [showInvalidDetail, setShowInvalidDetail] = useState(false)
 
+    const [unmappedAreas, setUnmappedAreas] = useState<string[]>([])
+    const [areaMappings, setAreaMappings] = useState<Record<string, string>>({})
+    const [availableAdscripciones, setAvailableAdscripciones] = useState<{ id: string, nombre: string }[]>([])
+    const [isMappingMode, setIsMappingMode] = useState(false)
+
+    const PARENT_CATEGORIES = [
+        "Oficinas Centrales",
+        "Distrito Sanitario 1",
+        "Distrito Sanitario 2",
+        "Distrito Sanitario 3"
+    ]
+
     const handleFile = async (file: File) => {
         if (!file) return
         const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls')
@@ -182,10 +172,38 @@ export default function ExcelImport() {
                 })
 
                 const sanitized = JSON.parse(JSON.stringify(cleanRows))
-                const corrected = sanitized.map(applyAutocorrect)
 
+                // Fetch adscripciones to check against
+                const adscs = await getAdscripcionesList()
+                setAvailableAdscripciones(adscs)
+
+                // Identity unknown areas
+                const uniqueAreas = Array.from(new Set(sanitized.map((r: any) => get(r, 'AREA', 'DEPENDENCIA')))).filter(Boolean) as string[]
+                const knownNames = new Set(adscs.map(a => a.nombre.toLowerCase().trim()))
+
+                // We also consider things matched by the fuzzy matcher as "known" if they exist in DB
+                // For simplicity, let's just find what is NOT in the official list and NOT matched by fuzzy logic
+                const unknown = uniqueAreas.filter(area => {
+                    const norm = area.toLowerCase().trim()
+                    if (knownNames.has(norm)) return false
+
+                    // Check if fuzzy matcher can identify it
+                    const identified = getOfficialAdscripcionName(area)
+                    if (identified && knownNames.has(identified.toLowerCase().trim())) return false
+
+                    return true
+                })
+
+                setUnmappedAreas(unknown)
+
+                const corrected = sanitized.map(applyAutocorrect)
                 setRawData(sanitized)
                 setPreviewData(corrected)
+
+                if (unknown.length > 0) {
+                    setIsMappingMode(true)
+                }
+
                 setProgress('idle')
             } catch (err) {
                 console.error(err)
@@ -221,7 +239,7 @@ export default function ExcelImport() {
         setIsProcessing(true)
         setProgress('uploading')
         try {
-            const result = await importFromExcel(rawData)
+            const result = await importFromExcel(rawData, areaMappings)
             if (result.success) {
                 toast.success("Importación finalizada")
                 setSummary({
@@ -262,6 +280,102 @@ export default function ExcelImport() {
         const updated = [...previewData]
         updated[index] = { ...updated[index], [field]: value }
         setPreviewData(updated)
+    }
+
+    // ── Mapping View ──────────────────────────────────────────────
+    if (isMappingMode && unmappedAreas.length > 0) {
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 p-8 rounded-[2.5rem]">
+                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                            <AlertCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-black text-amber-900 dark:text-amber-100">
+                                Áreas no reconocidas
+                            </h3>
+                            <p className="text-amber-700 dark:text-amber-500 font-medium mt-2 max-w-2xl">
+                                Se encontraron adscripciones en el Excel que no existen en el sistema.
+                                Por favor, asígnalas a una de las categorías principales para poder continuar con la importación.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {unmappedAreas.map(area => (
+                        <Card key={area} className="rounded-[2rem] border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow overflow-hidden bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
+                            <CardContent className="p-6">
+                                <div className="mb-6">
+                                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-1">
+                                        Detectado en Excel
+                                    </p>
+                                    <p className="font-bold text-lg text-foreground break-words line-clamp-2" title={area}>
+                                        {area}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em]">
+                                        Mapear a:
+                                    </p>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {PARENT_CATEGORIES.map(cat => (
+                                            <button
+                                                key={cat}
+                                                onClick={() => {
+                                                    setAreaMappings(prev => ({ ...prev, [area]: cat }))
+                                                }}
+                                                className={cn(
+                                                    "w-full text-left px-4 py-3 rounded-2xl text-sm font-bold transition-all border outline-none",
+                                                    areaMappings[area] === cat
+                                                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 ring-2 ring-primary ring-offset-2 dark:ring-offset-zinc-950"
+                                                        : "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-primary/50 text-zinc-600 dark:text-zinc-400"
+                                                )}
+                                            >
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-sm font-bold text-muted-foreground">
+                        {Object.keys(areaMappings).length} de {unmappedAreas.length} áreas mapeadas
+                    </p>
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <Button variant="outline" onClick={handleDiscard} className="flex-1 md:flex-none rounded-xl h-12 px-8 font-bold">
+                            Cancelar
+                        </Button>
+                        <Button
+                            disabled={Object.keys(areaMappings).length < unmappedAreas.length}
+                            onClick={() => {
+                                // Apply mappings to preview data
+                                if (previewData) {
+                                    const updated = previewData.map(row => {
+                                        const rawArea = row['_area']
+                                        if (areaMappings[rawArea]) {
+                                            return { ...row, _area: areaMappings[rawArea] }
+                                        }
+                                        return row
+                                    })
+                                    setPreviewData(updated)
+                                }
+                                setIsMappingMode(false)
+                            }}
+                            className="flex-1 md:flex-none rounded-xl h-12 px-10 font-bold gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                        >
+                            Continuar a Vista Previa
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     // ── Preview table ──────────────────────────────────────────────
