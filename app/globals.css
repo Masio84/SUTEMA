@@ -102,34 +102,32 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: 222 47% 4%;
-      /* Deep Navy */
-      --foreground: 210 40% 98%;
-      --card: 222 47% 6%;
-      /* Deep Navy Lighter */
-      --card-foreground: 210 40% 98%;
-      --popover: 222 47% 6%;
-      --popover-foreground: 210 40% 98%;
-      --primary: 213 94% 68%;
-      /* Official Blue 400ish for dark mode */
-      --primary-foreground: 222 47% 6%;
-      --secondary: 222 47% 11%;
-      --secondary-foreground: 210 40% 98%;
-      --muted: 222 47% 11%;
-      --muted-foreground: 215.4 16.3% 56.9%;
-      --accent: 222 47% 11%;
-      --accent-foreground: 210 40% 98%;
-      --destructive: 0 62.8% 30.6%;
-      --destructive-foreground: 210 40% 98%;
-      --border: 222 47% 11%;
-      --input: 222 47% 11%;
-      --ring: 212.7 26.8% 83.9%;
-    }
+  .dark {
+    --background: 222 47% 4%;
+    /* Deep Navy */
+    --foreground: 210 40% 98%;
+    --card: 222 47% 6%;
+    /* Deep Navy Lighter */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 6%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 213 94% 68%;
+    /* Official Blue 400ish for dark mode */
+    --primary-foreground: 222 47% 6%;
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+    --accent: 222 47% 11%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 222 47% 11%;
+    --input: 222 47% 11%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 

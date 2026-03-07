@@ -146,19 +146,17 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
 
             {/* ── Metric cards ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {metricCards.map((card, i) => (
                     <motion.div key={i} variants={item}>
-                        <Card className={`glass-card hover:-translate-y-1 transition-transform ${card.color} ${card.highlight ? 'border-amber-300 dark:border-amber-700' : ''}`}>
-                            <CardContent className="p-6">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-1">{card.title}</p>
-                                        <h3 className="text-4xl font-black tracking-tighter">{card.value}</h3>
-                                    </div>
-                                    <div className={`p-3 rounded-2xl ${card.highlight ? 'bg-amber-100 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800' : 'bg-primary-800/10 dark:bg-primary-800/20 border-primary-800/10'} border`}>
-                                        <card.icon className="h-6 w-6" />
-                                    </div>
+                        <Card className={`glass-card hover:-translate-y-0.5 transition-transform ${card.color} ${card.highlight ? 'border-amber-300 dark:border-amber-700' : ''}`}>
+                            <CardContent className="p-4 flex items-center justify-between">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-foreground/60 mb-0.5 truncate">{card.title}</p>
+                                    <h3 className="text-3xl font-black tracking-tighter truncate">{card.value}</h3>
+                                </div>
+                                <div className={`p-2.5 rounded-xl ${card.highlight ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-200 dark:border-amber-800' : 'bg-primary-900/5 dark:bg-primary-100/10 border-primary-900/10 dark:border-white/10'} border shrink-0 ml-3`}>
+                                    <card.icon className="h-5 w-5" />
                                 </div>
                             </CardContent>
                         </Card>
@@ -171,13 +169,12 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
                 {/* Bar chart – distribución */}
                 <motion.div variants={item}>
                     <Card className="glass-card overflow-hidden">
-                        <CardHeader className="pb-2 border-b border-border mx-6 px-0 pt-8">
-                            <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                <BarChart2 className="h-5 w-5 text-primary" /> Distribución por Adscripción
+                        <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <BarChart2 className="h-4 w-4 text-primary" /> Distribución por Adscripción
                             </CardTitle>
-                            <CardDescription>Total de trabajadores por área</CardDescription>
                         </CardHeader>
-                        <CardContent className="pt-8 px-6 pb-8">
+                        <CardContent className="pt-6 px-5 pb-6">
                             <div className="h-[350px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={stats.stats.adscDistrib} layout="vertical" margin={{ left: 40, right: 20 }}>
@@ -219,13 +216,12 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
                 {/* Pie chart – resumen por adscripcion with hover detail */}
                 <motion.div variants={item}>
                     <Card className="glass-card overflow-hidden">
-                        <CardHeader className="pb-2 border-b border-border mx-6 px-0 pt-8">
-                            <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                <PieChartIcon className="h-5 w-5 text-primary" /> Resumen por Área
+                        <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <PieChartIcon className="h-4 w-4 text-primary" /> Resumen por Área
                             </CardTitle>
-                            <CardDescription>Haz clic o pasa el cursor sobre una sección para ver detalles</CardDescription>
                         </CardHeader>
-                        <CardContent className="pt-4 px-6 pb-6">
+                        <CardContent className="pt-4 px-5 pb-5">
                             {pieData.length === 0 ? (
                                 <div className="flex items-center justify-center h-64 text-muted-foreground">
                                     <p className="font-bold text-sm">Sin datos disponibles</p>
@@ -265,41 +261,20 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
 
                                     {/* Detail panel for active adscripcion */}
                                     {activeAdsc && (
-                                        <div className="rounded-2xl border border-border bg-card/50 p-4 space-y-3">
+                                        <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
                                             <div className="flex items-center gap-2">
                                                 <div
-                                                    className="w-3 h-3 rounded-full shrink-0"
+                                                    className="w-2.5 h-2.5 rounded-full shrink-0"
                                                     style={{ background: COLORS[activeAdscIdx % COLORS.length] }}
                                                 />
-                                                <p className="font-black text-sm truncate">{activeAdsc.name}</p>
-                                                <span className="ml-auto text-xs font-black text-muted-foreground">{activeAdsc.total} trabajadores</span>
+                                                <p className="font-black text-xs truncate">{activeAdsc.name}</p>
+                                                <span className="ml-auto text-[10px] font-black text-muted-foreground">{activeAdsc.total} trabajadores</span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2">
-                                                <Pill label="Activos" value={activeAdsc.activos} color="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400" />
-                                                <Pill label="Jubilados" value={activeAdsc.jubilados} color="bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400" />
-                                                <Pill label="Inactivos" value={activeAdsc.inactivos} color="bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400" />
-                                                <Pill label="Bajas" value={activeAdsc.bajas} color="bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400" />
-                                                <Pill label="Con Hijos" value={activeAdsc.conHijos} color="bg-purple-50 text-purple-700 dark:bg-purple-950/20 dark:text-purple-400" />
-                                                <Pill
-                                                    label="Incompletos"
-                                                    value={activeAdsc.incompletos}
-                                                    color={activeAdsc.incompletos > 0
-                                                        ? "bg-orange-50 text-orange-700 dark:bg-orange-950/20 dark:text-orange-400"
-                                                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"}
-                                                />
-                                            </div>
-                                            {/* Completeness bar */}
-                                            <div className="pt-1">
-                                                <div className="flex justify-between text-[10px] font-black uppercase text-muted-foreground mb-1">
-                                                    <span>Completitud de datos</span>
-                                                    <span>{completosPct}%</span>
-                                                </div>
-                                                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full transition-all duration-500 ${completosPct >= 80 ? 'bg-emerald-500' : completosPct >= 50 ? 'bg-amber-400' : 'bg-red-400'}`}
-                                                        style={{ width: `${completosPct}%` }}
-                                                    />
-                                                </div>
+                                                <Pill label="Activos" value={activeAdsc.activos} color="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" />
+                                                <Pill label="Jubilados" value={activeAdsc.jubilados} color="bg-blue-500/10 text-blue-700 dark:text-blue-400" />
+                                                <Pill label="Inactivos" value={activeAdsc.inactivos} color="bg-amber-500/10 text-amber-700 dark:text-amber-400" />
+                                                <Pill label="Bajas" value={activeAdsc.bajas} color="bg-red-500/10 text-red-700 dark:text-red-400" />
                                             </div>
                                         </div>
                                     )}

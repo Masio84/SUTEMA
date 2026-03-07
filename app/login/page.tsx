@@ -104,9 +104,9 @@ export default function LoginPage() {
                         <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1">Gestión Sindical</p>
                     </div>
 
-                    <div className="mb-10 text-center md:text-left">
-                        <h2 className="text-3xl font-black text-foreground tracking-tight">Iniciar Sesión</h2>
-                        <p className="text-muted-foreground font-medium mt-2">Ingrese sus credenciales institucionales</p>
+                    <div className="mb-8 text-center md:text-left">
+                        <h2 className="text-2xl font-black text-foreground tracking-tight">Iniciar Sesión</h2>
+                        <p className="text-muted-foreground font-medium text-sm mt-1">Ingrese sus credenciales institucionales</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
@@ -118,7 +118,7 @@ export default function LoginPage() {
                                     id="email"
                                     type="email"
                                     placeholder="usuario@sutema.com"
-                                    className="h-14 rounded-xl pl-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-medium shadow-sm"
+                                    className="h-12 rounded-xl pl-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm text-foreground font-medium shadow-sm"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
@@ -154,7 +154,7 @@ export default function LoginPage() {
                                     id="password"
                                     type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
-                                    className="h-14 rounded-xl pl-12 pr-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-medium shadow-sm"
+                                    className="h-12 rounded-xl pl-12 pr-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm text-foreground font-medium shadow-sm"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -176,12 +176,12 @@ export default function LoginPage() {
 
                         <Button
                             type="submit"
-                            className="w-full h-14 mt-4 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary-900 active:scale-[0.98] transition-all shadow-md"
+                            className="w-full h-12 mt-4 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary-900 active:scale-[0.98] transition-all shadow-md text-sm"
                             disabled={isLoading}
                         >
                             {isLoading ? (
                                 <>
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Autenticando...
                                 </>
                             ) : (

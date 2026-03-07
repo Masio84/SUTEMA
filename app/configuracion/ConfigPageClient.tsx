@@ -202,14 +202,14 @@ export default function ConfigPageClient() {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Buscar usuarios..."
-                            className="pl-11 h-12 rounded-2xl border-border bg-background shadow-sm focus-glow"
+                            className="pl-11 h-10 rounded-xl border-border bg-background shadow-sm focus-glow text-sm"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
                     <Button
                         onClick={() => { setSelectedUser(null); setIsDialogOpen(true) }}
-                        className="rounded-2xl h-12 px-6 gap-2 bg-primary text-primary-foreground font-bold shadow-xl shadow-primary/10"
+                        className="rounded-xl h-10 px-5 gap-2 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/10"
                     >
                         <UserPlus className="h-4 w-4" /> Nuevo Usuario
                     </Button>
@@ -217,15 +217,15 @@ export default function ConfigPageClient() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* My Profile Section */}
-                    <Card className="glass-card shadow-sm border-none rounded-[2.5rem] p-8 lg:col-span-1">
+                    <Card className="glass-card shadow-sm border-none rounded-2xl p-6 lg:col-span-1">
                         <div className="flex flex-col h-full">
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-                                    <UserCog className="h-6 w-6" />
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                    <UserCog className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold">Mi Perfil</h3>
-                                    <p className="text-sm text-muted-foreground">Configuración personal y actividad.</p>
+                                    <h3 className="text-lg font-bold">Mi Perfil</h3>
+                                    <p className="text-xs text-muted-foreground">Datos personales y actividad.</p>
                                 </div>
                             </div>
 
@@ -328,16 +328,16 @@ export default function ConfigPageClient() {
                     </Card>
 
                     {/* Users List Section */}
-                    <Card className="glass-card shadow-sm overflow-hidden border-none rounded-[2.5rem] lg:col-span-2">
-                        <CardHeader className="pt-8 px-8 flex flex-row items-center gap-4 border-b border-border">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
-                                <ShieldCheck className="h-6 w-6" />
+                    <Card className="glass-card shadow-sm overflow-hidden border-none rounded-2xl lg:col-span-2">
+                        <CardHeader className="pt-6 px-6 flex flex-row items-center gap-4 border-b border-border">
+                            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                                <ShieldCheck className="h-5 w-5" />
                             </div>
                             <div className="flex-1">
-                                <CardTitle className="text-xl font-bold">Usuarios Registrados</CardTitle>
-                                <CardDescription>Gestión de roles y accesos al sistema sindical.</CardDescription>
+                                <CardTitle className="text-lg font-bold">Usuarios Registrados</CardTitle>
+                                <CardDescription className="text-xs">Gestión de roles y accesos.</CardDescription>
                             </div>
-                            <Badge variant="outline" className="rounded-full px-4 h-8 font-bold border-border text-[10px] tracking-widest uppercase">
+                            <Badge variant="outline" className="rounded-full px-3 h-7 font-bold border-border text-[9px] tracking-widest uppercase">
                                 {filteredUsers.length} TOTAL
                             </Badge>
                         </CardHeader>
@@ -345,10 +345,10 @@ export default function ConfigPageClient() {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent border-border">
-                                        <TableHead className="px-8 font-bold py-6">Usuario</TableHead>
-                                        <TableHead className="font-bold">Rol</TableHead>
-                                        <TableHead className="font-bold">Estatus</TableHead>
-                                        <TableHead className="px-8 text-right font-bold">Acciones</TableHead>
+                                        <TableHead className="px-6 font-black uppercase text-[9px] tracking-widest text-muted-foreground py-4">Usuario</TableHead>
+                                        <TableHead className="font-black uppercase text-[9px] tracking-widest text-muted-foreground">Rol</TableHead>
+                                        <TableHead className="font-black uppercase text-[9px] tracking-widest text-muted-foreground">Estatus</TableHead>
+                                        <TableHead className="px-6 text-right font-black uppercase text-[9px] tracking-widest text-muted-foreground">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -371,10 +371,10 @@ export default function ConfigPageClient() {
                                                 key={user.id}
                                                 className="group border-border transition-colors hover:bg-muted/50"
                                             >
-                                                <TableCell className="px-8 py-5">
+                                                <TableCell className="px-6 py-4">
                                                     <div className="flex flex-col">
-                                                        <span className="font-bold text-foreground">{user.nombre}</span>
-                                                        <span className="text-xs text-muted-foreground">{user.usuario || '—'}</span>
+                                                        <span className="font-bold text-sm text-foreground leading-tight">{user.nombre}</span>
+                                                        <span className="text-[10px] text-muted-foreground font-medium">{user.usuario || '—'}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -389,11 +389,11 @@ export default function ConfigPageClient() {
                                                         <span className="text-sm font-bold">{user.activo ? 'Activo' : 'Inactivo'}</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="px-8 text-right space-x-2">
+                                                <TableCell className="px-6 text-right space-x-1">
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-10 w-10 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/10 text-amber-500"
+                                                        className="h-8 w-8 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/10 text-amber-500"
                                                         title="Cambiar Contraseña Manualmente"
                                                         onClick={() => {
                                                             setUserToReset(user);
@@ -401,41 +401,41 @@ export default function ConfigPageClient() {
                                                             setPasswordDialogOpen(true);
                                                         }}
                                                     >
-                                                        <Lock className="h-4 w-4" />
+                                                        <Lock className="h-3.5 w-3.5" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-10 w-10 rounded-xl hover:bg-muted"
+                                                        className="h-8 w-8 rounded-lg hover:bg-muted"
                                                         title="Enviar Enlace de Recuperación (Email)"
                                                         onClick={() => handleReset(user)}
                                                         disabled={actionLoadingId === user.id}
                                                     >
                                                         {actionLoadingId === user.id ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                                            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                                                         ) : (
-                                                            <Key className="h-4 w-4 text-muted-foreground" />
+                                                            <Key className="h-3.5 w-3.5 text-muted-foreground" />
                                                         )}
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-10 w-10 border border-border rounded-xl hover:bg-muted"
+                                                        className="h-8 w-8 border border-border rounded-lg hover:bg-muted"
                                                         onClick={() => { setSelectedUser(user); setIsDialogOpen(true) }}
                                                     >
-                                                        <UserCog className="h-4 w-4 text-foreground/60" />
+                                                        <UserCog className="h-3.5 w-3.5 text-foreground/60" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-10 w-10 rounded-xl hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
+                                                        className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
                                                         onClick={() => handleDelete(user)}
                                                         disabled={actionLoadingId === user.id}
                                                     >
                                                         {actionLoadingId === user.id ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                                         ) : (
-                                                            <Trash2 className="h-4 w-4" />
+                                                            <Trash2 className="h-3.5 w-3.5" />
                                                         )}
                                                     </Button>
                                                 </TableCell>
@@ -462,15 +462,14 @@ export default function ConfigPageClient() {
                     isSelf={passwordDialogIsSelf}
                 />
 
-                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/50 p-6 rounded-[2rem] flex gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold shrink-0">
-                        <Lock className="h-5 w-5" />
+                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/50 p-5 rounded-2xl flex gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold shrink-0">
+                        <Lock className="h-4 w-4" />
                     </div>
                     <div>
-                        <p className="font-bold text-amber-900 dark:text-amber-200">Nota sobre el Cambio Manual</p>
-                        <p className="text-sm text-amber-800/70 dark:text-amber-400/70 mt-1">
+                        <p className="font-bold text-xs text-amber-900 dark:text-amber-200">Nota sobre el Cambio Manual</p>
+                        <p className="text-[11px] text-amber-800/70 dark:text-amber-400/70 mt-0.5">
                             El cambio manual de contraseña es instantáneo y no requiere confirmación por correo.
-                            Asegúrate de haber configurado la clave de servicio en el servidor para que esta función esté activa.
                         </p>
                     </div>
                 </div>

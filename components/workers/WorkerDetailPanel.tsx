@@ -28,9 +28,9 @@ const ESTADO_CIVIL_OPTIONS = ['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a'
 // ── Small sub-components defined OUTSIDE the panel (avoids React re-mount issues)
 function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
     return (
-        <div className="flex items-center gap-2 border-b border-border pb-2 col-span-2">
-            <div className="p-1.5 rounded-xl bg-primary/10 text-primary">
-                <Icon className="h-4 w-4" />
+        <div className="flex items-center gap-2 border-b border-border pb-1.5 col-span-2">
+            <div className="p-1 rounded-lg bg-primary/10 text-primary">
+                <Icon className="h-3.5 w-3.5" />
             </div>
             <h4 className="font-black text-sm uppercase tracking-wider">{title}</h4>
         </div>
@@ -172,17 +172,17 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                     className="fixed top-0 right-0 h-full w-full max-w-2xl bg-background border-l border-border shadow-2xl z-50 flex flex-col"
                 >
                     {/* ── Header ── */}
-                    <div className="flex items-center justify-between p-6 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
+                    <div className="flex items-center justify-between p-5 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
                         <div>
-                            <h3 className="text-lg font-black tracking-tight">
+                            <h3 className="text-base font-black tracking-tight">
                                 {isLoading
                                     ? 'Cargando...'
                                     : worker
                                         ? `${worker.nombre} ${worker.apellido_paterno}`
                                         : 'Registro'}
                             </h3>
-                            <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                                {isEditing ? '✏️ Modo edición — los cambios no se guardan automáticamente' : '👁️ Solo lectura'}
+                            <p className="text-[10px] text-muted-foreground font-medium">
+                                {isEditing ? '✏️ Modo edición — cambios no guardados' : '👁️ Solo lectura'}
                             </p>
                         </div>
                         <div className="flex gap-2">
@@ -209,7 +209,7 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                     </div>
 
                     {/* ── Body ── */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                    <div className="flex-1 overflow-y-auto p-5 space-y-6">
                         {isLoading && (
                             <div className="flex flex-col items-center justify-center h-60 gap-4">
                                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -223,12 +223,12 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                                 <div className="flex items-center gap-3 flex-wrap">
                                     {isEditing ? (
                                         <Select value={form.estatus ?? ''} onValueChange={v => setField('estatus', v)}>
-                                            <SelectTrigger className="h-9 rounded-xl w-40">
+                                            <SelectTrigger className="h-8 rounded-lg w-32 text-xs">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-xl">
                                                 {ESTATUS_OPTIONS.map(e => (
-                                                    <SelectItem key={e} value={e}>
+                                                    <SelectItem key={e} value={e} className="text-xs">
                                                         {e.charAt(0).toUpperCase() + e.slice(1)}
                                                     </SelectItem>
                                                 ))}
@@ -237,7 +237,7 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                                     ) : (
                                         getEstatusBadge(worker.estatus)
                                     )}
-                                    <span className="text-xs text-muted-foreground font-mono tracking-wider">
+                                    <span className="text-[10px] text-muted-foreground font-mono tracking-wider bg-muted/50 px-2 py-0.5 rounded-full">
                                         {worker.curp || '—'}
                                     </span>
                                 </div>
@@ -286,16 +286,16 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                                 </div>
 
                                 {/* ── Laboral ── */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                                     <SectionHeader icon={Briefcase} title="Información Laboral" />
                                     <div className="col-span-2">
                                         <FieldRow label="Adscripción" isEditing={isEditing} readValue={worker.adscripciones?.nombre}
                                             editNode={
                                                 <Select value={String(form.adscripcion_id ?? '')} onValueChange={v => setField('adscripcion_id', v)}>
-                                                    <SelectTrigger className="h-9 rounded-xl mt-1"><SelectValue /></SelectTrigger>
+                                                    <SelectTrigger className="h-8 rounded-lg mt-1 text-xs"><SelectValue /></SelectTrigger>
                                                     <SelectContent className="rounded-xl">
                                                         {adscripciones.map(a => (
-                                                            <SelectItem key={a.id} value={String(a.id)}>{a.nombre}</SelectItem>
+                                                            <SelectItem key={a.id} value={String(a.id)} className="text-xs">{a.nombre}</SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
@@ -311,7 +311,7 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                                                 type="date"
                                                 value={form.fecha_ingreso ? (form.fecha_ingreso instanceof Date ? form.fecha_ingreso.toISOString().split('T')[0] : form.fecha_ingreso) : ''}
                                                 onChange={e => setField('fecha_ingreso', e.target.value)}
-                                                className="h-9 rounded-xl mt-1"
+                                                className="h-8 rounded-lg mt-1 text-xs"
                                             />
                                         }
                                     />

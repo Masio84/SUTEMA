@@ -10,6 +10,8 @@ import { motion } from 'framer-motion'
 import { LayoutDashboard, UserPlus, FileText, Settings, Search, LogOut, FileUp, Menu } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
+import { ThemeToggle } from '@/components/theme-toggle'
+
 const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
     { label: 'Consultas / Edición', href: '/consultas', icon: <Search className="h-4 w-4" /> },
@@ -96,7 +98,7 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
-                <header className="h-20 bg-card border-b border-border sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
+                <header className="h-16 bg-card border-b border-border sticky top-0 z-30 flex items-center justify-between px-4 md:px-6">
                     <div className="flex items-center gap-4">
                         {/* Mobile Menu Button */}
                         <div className="md:hidden">
@@ -152,25 +154,26 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.1 }}
                         >
-                            <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">
+                            <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-0.5">
                                 <span>SUTEMA</span>
                                 <span className="hidden sm:inline">/</span>
                                 <span className="text-primary hidden sm:inline">{title}</span>
                             </div>
-                            <h1 className="text-xl sm:text-2xl font-black tracking-tighter text-foreground truncate max-w-[200px] sm:max-w-none">{subtitle || title}</h1>
+                            <h1 className="text-xl font-black tracking-tighter text-foreground truncate max-w-[200px] sm:max-w-none leading-none">{subtitle || title}</h1>
                         </motion.div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-card border border-border shadow-sm">
-                            <Avatar className="h-8 w-8 cursor-pointer hover:scale-110 transition-transform">
-                                <AvatarFallback className="bg-primary-900 text-white text-[10px] font-black">AD</AvatarFallback>
+                    <div className="flex items-center gap-3">
+                        <ThemeToggle />
+                        <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-card border border-border shadow-sm">
+                            <Avatar className="h-7 w-7 cursor-pointer hover:scale-110 transition-transform">
+                                <AvatarFallback className="bg-primary-900 text-white text-[9px] font-black">AD</AvatarFallback>
                             </Avatar>
                         </div>
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar">
+                <main className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
                     {children}
                 </main>
             </div>

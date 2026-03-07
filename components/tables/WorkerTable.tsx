@@ -112,7 +112,7 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
 
     const Header = ({ label, col, sortable = true }: { label: string, col: string, sortable?: boolean }) => (
         <TableHead
-            className={`font-black uppercase tracking-widest text-[10px] text-muted-foreground py-5 px-6 ${sortable ? 'cursor-pointer hover:text-foreground transition-colors' : ''}`}
+            className={`font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 ${sortable ? 'cursor-pointer hover:text-foreground transition-colors' : ''}`}
             onClick={() => sortable && onSort(col)}
         >
             <div className="flex items-center gap-1">
@@ -131,10 +131,10 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                             <Header label="CURP" col="curp" />
                             <Header label="Municipio" col="municipio" />
                             <Header label="Adscripción" col="adscripcion_id" />
-                            <Header label="Hijos < 12" col="hijos_menores_12" />
+                            <Header label="Hijos" col="hijos_menores_12" />
                             <Header label="Antigüedad" col="fecha_ingreso" />
                             <Header label="Estatus" col="estatus" />
-                            <TableHead className="w-[100px] text-right font-black uppercase tracking-widest text-[10px] text-muted-foreground pr-6">Acciones</TableHead>
+                            <TableHead className="w-[80px] text-right font-black uppercase tracking-widest text-[9px] text-muted-foreground pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -158,51 +158,49 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                     className={`group border-border transition-colors hover:bg-muted/30 ${onRowClick ? 'cursor-pointer' : ''}`}
                                     onClick={() => onRowClick?.(worker)}
                                 >
-                                    <TableCell className="py-4 px-6">
+                                    <TableCell className="py-2.5 px-4">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-foreground">
+                                            <span className="font-bold text-sm text-foreground leading-tight">
                                                 {highlightText(worker.nombre)} {highlightText(worker.apellido_paterno)}
                                             </span>
-                                            <span className="text-xs text-muted-foreground">{highlightText(worker.apellido_materno) || ''}</span>
+                                            <span className="text-[10px] text-muted-foreground font-medium">{highlightText(worker.apellido_materno) || ''}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-mono text-xs uppercase tracking-wider">{highlightText(worker.curp)}</TableCell>
-                                    <TableCell className="text-sm font-medium">{highlightText(worker.municipio)}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="font-mono text-[10px] uppercase tracking-wider px-4">{highlightText(worker.curp)}</TableCell>
+                                    <TableCell className="text-xs font-medium px-4">{highlightText(worker.municipio)}</TableCell>
+                                    <TableCell className="px-4">
                                         <div className="flex flex-col">
-                                            <span className="text-sm font-medium">{highlightText(worker.adscripciones?.nombre || worker.adscripcion_id)}</span>
-                                            {worker.unidades?.nombre && <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tight">{highlightText(worker.unidades.nombre)}</span>}
+                                            <span className="text-xs font-bold">{highlightText(worker.adscripciones?.nombre || worker.adscripcion_id)}</span>
+                                            {worker.unidades?.nombre && <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter">{highlightText(worker.unidades.nombre)}</span>}
                                         </div>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-4">
                                         {(worker.hijos_menores_12 || 0) > 0 ? (
-                                            <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100 font-bold">
+                                            <Badge variant="secondary" className="bg-purple-100/50 text-purple-700 border-transparent font-black px-1.5 py-0 h-4 text-[9px]">
                                                 {worker.hijos_menores_12}
                                             </Badge>
                                         ) : (
-                                            <span className="text-muted-foreground opacity-30">—</span>
+                                            <span className="text-muted-foreground opacity-20">—</span>
                                         )}
                                     </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-black">
+                                    <TableCell className="px-4">
+                                        <div className="flex flex-col leading-tight">
+                                            <span className="text-xs font-black">
                                                 {getSeniority(worker.fecha_ingreso).years}
-                                                <span className="text-[10px] text-muted-foreground uppercase ml-1 mr-2 tracking-tighter">Años</span>
+                                                <span className="text-[9px] text-muted-foreground uppercase ml-0.5 tracking-tighter">A</span>
                                             </span>
-                                            <div className="flex gap-2">
-                                                <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                                                    {getSeniority(worker.fecha_ingreso).months}
-                                                    <span className="ml-0.5 opacity-60">Meses</span>
+                                            <div className="flex gap-1">
+                                                <span className="text-[9px] font-bold text-muted-foreground">
+                                                    {getSeniority(worker.fecha_ingreso).months}m
                                                 </span>
-                                                <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                                                    {getSeniority(worker.fecha_ingreso).days}
-                                                    <span className="ml-0.5 opacity-60">Días</span>
+                                                <span className="text-[9px] font-bold text-muted-foreground">
+                                                    {getSeniority(worker.fecha_ingreso).days}d
                                                 </span>
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{getEstatusBadge(worker.estatus)}</TableCell>
-                                    <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>
+                                    <TableCell className="px-4">{getEstatusBadge(worker.estatus)}</TableCell>
+                                    <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted rounded-lg">

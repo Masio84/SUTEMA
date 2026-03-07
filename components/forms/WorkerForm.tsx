@@ -130,18 +130,18 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12 pb-24 max-w-5xl mx-auto">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-20 max-w-5xl mx-auto">
 
                 {/* Section: Información Personal */}
                 <motion.div variants={sectionVariants} initial="hidden" animate="visible">
                     <Card className="border-none shadow-none bg-transparent">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
-                                <User className="h-5 w-5" />
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                <User className="h-4 w-4" />
                             </div>
-                            <h3 className="text-xl font-bold tracking-tight">Información Personal</h3>
+                            <h3 className="text-lg font-bold tracking-tight">Información Personal</h3>
                         </div>
-                        <CardContent className="p-8 glass-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <CardContent className="p-5 glass-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             <FormField
                                 control={form.control}
                                 name="nombre"
@@ -247,13 +247,13 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                 {/* Section: Información Laboral */}
                 <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
                     <Card className="border-none shadow-none bg-transparent">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 rounded-2xl bg-primary-800/10 text-primary-800">
-                                <Briefcase className="h-5 w-5" />
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 rounded-xl bg-primary-800/10 text-primary-800">
+                                <Briefcase className="h-4 w-4" />
                             </div>
-                            <h3 className="text-xl font-bold tracking-tight">Información Laboral</h3>
+                            <h3 className="text-lg font-bold tracking-tight">Información Laboral</h3>
                         </div>
-                        <CardContent className="p-8 glass-card grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <CardContent className="p-5 glass-card grid grid-cols-1 md:grid-cols-2 gap-5">
                             <FormField
                                 control={form.control}
                                 name="adscripcion_id"
@@ -375,13 +375,13 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                 {/* Section: Dirección */}
                 <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
                     <Card className="border-none shadow-none bg-transparent">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 rounded-2xl bg-primary-400/20 text-primary-800">
-                                <Home className="h-5 w-5" />
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 rounded-xl bg-primary-400/20 text-primary-800">
+                                <Home className="h-4 w-4" />
                             </div>
-                            <h3 className="text-xl font-bold tracking-tight">Dirección</h3>
+                            <h3 className="text-lg font-bold tracking-tight">Dirección</h3>
                         </div>
-                        <CardContent className="p-8 glass-card grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <CardContent className="p-5 glass-card grid grid-cols-1 md:grid-cols-3 gap-5">
                             <div className="md:col-span-2">
                                 <FormField
                                     control={form.control}
@@ -478,17 +478,17 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                 </motion.div>
 
                 {/* Section: Información Familiar & Electorales */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Familiar */}
                     <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.3 }}>
                         <Card className="border-none shadow-none bg-transparent">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 rounded-2xl bg-primary-800/10 text-primary-800">
-                                    <Users className="h-5 w-5" />
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 rounded-xl bg-primary-800/10 text-primary-800">
+                                    <Users className="h-4 w-4" />
                                 </div>
-                                <h3 className="text-xl font-bold tracking-tight">Información Familiar</h3>
+                                <h3 className="text-lg font-bold tracking-tight">Información Familiar</h3>
                             </div>
-                            <CardContent className="p-8 glass-card space-y-6 shadow-sm min-h-[160px]">
+                            <CardContent className="p-5 glass-card space-y-4 shadow-sm min-h-[140px]">
                                 <FormField
                                     control={form.control}
                                     name="tiene_hijos"
@@ -543,13 +543,13 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                     {/* Electorales */}
                     <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.4 }}>
                         <Card className="border-none shadow-none bg-transparent">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 rounded-2xl bg-primary-800/10 text-primary-800">
-                                    <CreditCard className="h-5 w-5" />
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 rounded-xl bg-primary-800/10 text-primary-800">
+                                    <CreditCard className="h-4 w-4" />
                                 </div>
-                                <h3 className="text-xl font-bold tracking-tight">Datos Electorales</h3>
+                                <h3 className="text-lg font-bold tracking-tight">Datos Electorales</h3>
                             </div>
-                            <CardContent className="p-8 glass-card grid grid-cols-1 gap-8 min-h-[160px]">
+                            <CardContent className="p-5 glass-card grid grid-cols-1 gap-5 min-h-[140px]">
                                 <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
@@ -584,19 +584,19 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                 </div>
 
                 {/* Floating Actions */}
-                <div className="fixed bottom-8 right-8 z-50">
+                <div className="fixed bottom-6 right-6 z-50">
                     <Button
                         size="lg"
                         type="submit"
                         disabled={isLoading}
-                        className="h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all gap-2 text-base font-bold"
+                        className="h-12 px-6 rounded-xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all gap-2 text-sm font-bold"
                     >
                         {isLoading ? (
-                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                            <Save className="h-5 w-5" />
+                            <Save className="h-4 w-4" />
                         )}
-                        Guardar Trabajador
+                        Guardar Registro
                     </Button>
                 </div>
 
