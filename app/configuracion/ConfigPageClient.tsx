@@ -474,40 +474,7 @@ export default function ConfigPageClient() {
                     </div>
                 </div>
 
-                {/* Seeding Section */}
-                {isAdmin && (
-                    <Card className="glass-card shadow-sm border-none rounded-2xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 flex items-center justify-center font-bold">
-                                <Plus className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold">Mantenimiento de Catálogos</h3>
-                                <p className="text-xs text-muted-foreground">Actualización manual de tablas de sistema.</p>
-                            </div>
-                        </div>
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-[1.5rem] bg-emerald-500/5 border border-emerald-500/10">
-                            <div>
-                                <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Nuevas Adscripciones</p>
-                                <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/60 mt-0.5">
-                                    Agrega "Regulación Sanitaria", "Agua Clara", "CERESO", "SEEM", "VIH" y "OTRO" al catálogo oficial si aún no existen.
-                                </p>
-                            </div>
-                            <Button
-                                onClick={async () => {
-                                    const { seedNewAdscripciones } = await import('@/app/actions/seed')
-                                    const results = await seedNewAdscripciones()
-                                    toast.success("Proceso de actualizado completado", {
-                                        description: results.join('\n')
-                                    })
-                                }}
-                                className="rounded-xl h-10 px-6 font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/10"
-                            >
-                                Actualizar Catálogo
-                            </Button>
-                        </div>
-                    </Card>
-                )}
+
 
                 {/* Confirm Action Dialog */}
                 <Dialog open={confirmConfig.open} onOpenChange={(v) => setConfirmConfig(prev => ({ ...prev, open: v }))}>

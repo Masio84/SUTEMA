@@ -86,7 +86,11 @@ export async function importFromExcel(rows: any[], mappings?: Record<string, str
             }
 
             // ── CURP ──────────────────────────────────────────
-            const curp = getVal('CURP')?.toString().trim().toUpperCase()
+            let curp = getVal('CURP')?.toString().trim().toUpperCase()
+            if (!curp) {
+                // Generate a unique consecutive CURP to avoid rejection
+                curp = `GEN-TEMP-${(index + 1).toString().padStart(6, '0')}`
+            }
 
             // ── ÁREA / DEPENDENCIA (alias) ─────────────────────
             // "DEPENDENCIA" and "AREA" both point to adscripcion_id
@@ -112,11 +116,10 @@ export async function importFromExcel(rows: any[], mappings?: Record<string, str
                 rawNombre = `${rawApeP} ${rawApeM}`.trim()
             }
 
-            if (!rawNombre || !curp || !adscId) {
+            if (!rawNombre || !adscId) {
                 // Build human-readable reason
                 const reasons: string[] = []
                 if (!rawNombre) reasons.push('Nombre vacío (no se encontró en Columna A ni en apellidos)')
-                if (!curp) reasons.push('CURP vacío o faltante')
                 if (!adscId) {
                     if (!rawArea) reasons.push('Área/Dependencia no especificada')
                     else reasons.push(`Área "${rawArea}" no reconocida${officialName ? ` (se detectó como "${officialName}" pero no existe en la BD)` : ''}`)
