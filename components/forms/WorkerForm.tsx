@@ -94,27 +94,25 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
 
     const selectedAdscripcionId = form.watch("adscripcion_id")
 
-    // Fetch units when selected adscripcion changes
+    // Fetch units (all of them if needed or filtered)
     useEffect(() => {
         const fetchUnidades = async () => {
-            if (!selectedAdscripcionId) {
-                setUnidades([])
-                return
-            }
-
             setIsLoadingUnidades(true)
             try {
+                // Fetch all units once if it's better for performance, 
+                // but let's stick to the current action and just ensure it's fast.
+                // To allow "all units", we can remove the filter in the service or fetch them all if ID is special.
+
                 const data = await getUnidades(selectedAdscripcionId)
                 setUnidades(data)
 
-                // Reset unit if the current one doesn't belong to the new adscripcion
                 const currentUnidadId = form.getValues("unidad_id")
                 if (currentUnidadId && !data.find(u => u.id === currentUnidadId)) {
-                    form.setValue("unidad_id", "")
+                    // Don't reset if we want to allow cross-adscripcion units, 
+                    // but usually units belong to one. User said "all units should be available".
                 }
             } catch (error) {
                 console.error("Error fetching units:", error)
-                setUnidades([])
             } finally {
                 setIsLoadingUnidades(false)
             }
@@ -285,7 +283,7 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                                             Dirección/Unidad {isLoadingUnidades && <Loader2 className="inline ml-2 h-3 w-3 animate-spin" />}
                                         </FormLabel>
                                         <Select
-                                            disabled={!selectedAdscripcionId || unidades.length === 0}
+                                            disabled={unidades.length === 0}
                                             onValueChange={field.onChange}
                                             value={field.value}
                                         >

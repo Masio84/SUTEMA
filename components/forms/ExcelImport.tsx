@@ -120,7 +120,7 @@ export default function ExcelImport() {
     const [showInvalidDetail, setShowInvalidDetail] = useState(false)
 
     const [unmappedAreas, setUnmappedAreas] = useState<string[]>([])
-    const [areaMappings, setAreaMappings] = useState<Record<string, string>>({})
+    const [areaMappings, setAreaMappings] = useState<Record<string | number, string>>({})
     const [availableAdscripciones, setAvailableAdscripciones] = useState<{ id: string, nombre: string }[]>([])
     const [isMappingMode, setIsMappingMode] = useState(false)
 
@@ -132,7 +132,8 @@ export default function ExcelImport() {
         "Regulación Sanitaria",
         "Agua Clara",
         "CERESO",
-        "SEEM"
+        "SEEM",
+        "VIH"
     ]
 
     const handleFile = async (file: File) => {

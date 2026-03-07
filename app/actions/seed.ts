@@ -9,7 +9,8 @@ export async function seedNewAdscripciones() {
         { nombre: 'Regulación Sanitaria' },
         { nombre: 'Agua Clara' },
         { nombre: 'CERESO' },
-        { nombre: 'SEEM' }
+        { nombre: 'SEEM' },
+        { nombre: 'VIH' }
     ]
 
     const results = []
