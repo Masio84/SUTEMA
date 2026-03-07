@@ -33,6 +33,14 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Badge } from '@/components/ui/badge'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog"
+import { Label } from '@/components/ui/label'
 
 // ─────────────────────────────────────────────
 // Local autocorrect helpers (mirrors server-side)
@@ -130,6 +138,7 @@ export default function ExcelImport() {
     const [areaMappings, setAreaMappings] = useState<Record<string | number, string>>({})
     const [availableAdscripciones, setAvailableAdscripciones] = useState<{ id: string, nombre: string }[]>([])
     const [isMappingMode, setIsMappingMode] = useState(false)
+    const [mobileRecordToMap, setMobileRecordToMap] = useState<any | null>(null)
 
     const PARENT_CATEGORIES = [
         "Oficinas Centrales",
@@ -325,6 +334,12 @@ export default function ExcelImport() {
         const mappedRecordCount = recordsNeedingMapping.filter(r => areaMappings[r.index]).length
         const allRecordsMapped = mappedRecordCount === recordsNeedingMapping.length
 
+        const handleMobileMap = (record: any) => {
+            if (window.innerWidth < 768) {
+                setMobileRecordToMap(record)
+            }
+        }
+
         return (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-[2.5rem] relative overflow-hidden">
@@ -349,62 +364,81 @@ export default function ExcelImport() {
                 </div>
 
                 <Card className="rounded-[2.5rem] border-border shadow-xl overflow-hidden bg-card/50 backdrop-blur-xl">
-                    <div className="max-h-[450px] overflow-auto">
-                        <Table className="table-fixed w-full min-w-[1000px]">
+                    <div className="max-h-[500px] overflow-auto">
+                        <Table className="table-fixed w-full">
                             <TableHeader className="bg-muted sticky top-0 z-20 shadow-sm border-b-2 border-border">
                                 <TableRow className="border-b border-border hover:bg-transparent">
-                                    <TableHead className="w-12 px-2 py-2 font-black uppercase tracking-widest text-[10px] text-foreground border-r border-border/50">#</TableHead>
-                                    <TableHead className="w-[35%] font-black uppercase tracking-widest text-[10px] px-2 py-2 leading-tight text-foreground">
-                                        Nombre del Trabajador<br /><span className="text-[8px] opacity-60">(Encontrado en Excel)</span>
+                                    <TableHead className="w-10 px-2 py-2 font-black uppercase tracking-widest text-[9px] text-foreground border-r border-border/50">#</TableHead>
+                                    <TableHead className="w-[45%] md:w-[35%] font-black uppercase tracking-widest text-[10px] px-2 py-2 leading-tight text-foreground">
+                                        Nombre del Trabajador<br /><span className="text-[8px] opacity-60">(Excel)</span>
                                     </TableHead>
-                                    <TableHead className="w-[30%] font-black uppercase tracking-widest text-[10px] px-2 py-2 text-foreground">Adscripción Original</TableHead>
-                                    <TableHead className="w-[200px] font-black uppercase tracking-widest text-[10px] px-2 py-2 text-primary text-center">Categoría Oficial</TableHead>
+                                    <TableHead className="hidden md:table-cell w-[30%] font-black uppercase tracking-widest text-[10px] px-2 py-2 text-foreground">Adscripción Original</TableHead>
+                                    <TableHead className="w-[120px] md:w-[180px] font-black uppercase tracking-widest text-[10px] px-2 py-2 text-primary translate-x-[-1px]">
+                                        Categoría Oficial<br /><span className="md:hidden text-[7px] opacity-50 font-bold">(Tap para asignar)</span>
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {recordsNeedingMapping.map((r, i) => (
-                                    <TableRow key={r.index} className="group hover:bg-primary/5 transition-colors border-b border-border/50">
+                                    <TableRow
+                                        key={r.index}
+                                        className="group hover:bg-primary/5 transition-colors border-b border-border/50 cursor-pointer md:cursor-default"
+                                        onClick={() => handleMobileMap(r)}
+                                    >
                                         <TableCell className="px-2 py-1 font-mono text-[9px] text-muted-foreground font-bold border-r border-border/50 bg-muted/20 text-center">{i + 1}</TableCell>
-                                        <TableCell className="px-2 py-1 font-bold text-[11px] text-foreground uppercase truncate" title={r.nombreIdentificado}>{r.nombreIdentificado}</TableCell>
-                                        <TableCell className="px-2 py-1 truncate">
+                                        <TableCell className="px-2 py-1 font-bold text-[10px] md:text-[11px] text-foreground uppercase truncate" title={r.nombreIdentificado}>{r.nombreIdentificado}</TableCell>
+                                        <TableCell className="hidden md:table-cell px-2 py-1 truncate">
                                             <Badge variant="outline" className="bg-muted/30 text-muted-foreground border-border/50 text-[9px] px-1.5 py-0 font-medium truncate max-w-full" title={r.rawArea}>
                                                 {r.rawArea}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="px-2 py-0.5">
-                                            <Select
-                                                value={areaMappings[r.index] || ''}
-                                                onValueChange={(v) => {
-                                                    setAreaMappings(prev => {
-                                                        const next = { ...prev, [r.index]: v }
-                                                        // If it's NOT ISSEA, apply to all records sharing the same raw string
-                                                        if (r.rawArea.toUpperCase().trim() !== 'ISSEA') {
-                                                            recordsNeedingMapping.forEach(other => {
-                                                                if (other.rawArea === r.rawArea) {
-                                                                    next[other.index] = v
-                                                                }
-                                                            })
-                                                        }
-                                                        return next
-                                                    })
-                                                }}
-                                            >
-                                                <SelectTrigger className={cn(
-                                                    "h-7 w-full rounded-md font-bold transition-all border text-[10px] px-2",
-                                                    areaMappings[r.index]
-                                                        ? "border-primary/50 bg-primary/5 text-primary shadow-sm"
-                                                        : "border-border bg-background/50 text-muted-foreground hover:border-primary/30"
-                                                )}>
-                                                    <SelectValue placeholder="Seleccionar..." />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-xl p-1 shadow-2xl border-primary/20">
-                                                    {PARENT_CATEGORIES.map(cat => (
-                                                        <SelectItem key={cat} value={cat} className="rounded-lg font-bold text-xs py-2 px-3 cursor-pointer">
-                                                            {cat}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                        <TableCell className="px-1 md:px-2 py-0.5">
+                                            <div className="md:block hidden">
+                                                <Select
+                                                    value={areaMappings[r.index] || ''}
+                                                    onValueChange={(v) => {
+                                                        setAreaMappings(prev => {
+                                                            const next = { ...prev, [r.index]: v }
+                                                            // If it's NOT ISSEA, apply to all records sharing the same raw string
+                                                            if (r.rawArea.toUpperCase().trim() !== 'ISSEA') {
+                                                                recordsNeedingMapping.forEach(other => {
+                                                                    if (other.rawArea === r.rawArea) {
+                                                                        next[other.index] = v
+                                                                    }
+                                                                })
+                                                            }
+                                                            return next
+                                                        })
+                                                    }}
+                                                >
+                                                    <SelectTrigger className={cn(
+                                                        "h-7 w-full rounded-md font-bold transition-all border text-[10px] px-2",
+                                                        areaMappings[r.index]
+                                                            ? "border-primary/50 bg-primary/5 text-primary shadow-sm"
+                                                            : "border-border bg-background/50 text-muted-foreground hover:border-primary/30"
+                                                    )}>
+                                                        <SelectValue placeholder="Seleccionar..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl p-1 shadow-2xl border-primary/20">
+                                                        {PARENT_CATEGORIES.map(cat => (
+                                                            <SelectItem key={cat} value={cat} className="rounded-lg font-bold text-xs py-2 px-3 cursor-pointer">
+                                                                {cat}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="md:hidden">
+                                                <Badge
+                                                    variant={areaMappings[r.index] ? "default" : "outline"}
+                                                    className={cn(
+                                                        "text-[8px] px-2 py-0.5 font-bold uppercase w-full justify-center",
+                                                        areaMappings[r.index] ? "bg-primary text-white" : "text-muted-foreground border-dashed"
+                                                    )}
+                                                >
+                                                    {areaMappings[r.index] ? "Mapeado" : "Pendiente"}
+                                                </Badge>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -412,6 +446,59 @@ export default function ExcelImport() {
                         </Table>
                     </div>
                 </Card>
+
+                {/* Mobile Mapping Dialog */}
+                <Dialog open={!!mobileRecordToMap} onOpenChange={(open) => !open && setMobileRecordToMap(null)}>
+                    <DialogContent className="rounded-[2rem] border-primary/20 bg-background/95 backdrop-blur-xl shadow-2xl p-6">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-black italic text-primary tracking-tight">Manual Mapping</DialogTitle>
+                            <div className="mt-4 p-4 rounded-2xl bg-muted/50 border border-border space-y-4">
+                                <div>
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Trabajador</Label>
+                                    <p className="text-sm font-bold text-foreground uppercase mt-1">{mobileRecordToMap?.nombreIdentificado}</p>
+                                </div>
+                                <div className="border-t border-border pt-3">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Adscripción en Excel</Label>
+                                    <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mt-1">{mobileRecordToMap?.rawArea}</p>
+                                </div>
+                            </div>
+                        </DialogHeader>
+
+                        <div className="py-6 space-y-4">
+                            <Label className="text-xs font-black uppercase text-foreground tracking-widest pl-2">Seleccione Categoría Oficial</Label>
+                            <Select
+                                value={mobileRecordToMap ? (areaMappings[mobileRecordToMap.index] || '') : ''}
+                                onValueChange={(v) => {
+                                    if (!mobileRecordToMap) return;
+                                    setAreaMappings(prev => {
+                                        const next = { ...prev, [mobileRecordToMap.index]: v }
+                                        if (mobileRecordToMap.rawArea.toUpperCase().trim() !== 'ISSEA') {
+                                            recordsNeedingMapping.forEach(other => {
+                                                if (other.rawArea === mobileRecordToMap.rawArea) {
+                                                    next[other.index] = v
+                                                }
+                                            })
+                                        }
+                                        return next
+                                    })
+                                    setMobileRecordToMap(null)
+                                    toast.success("Área asignada correctamente")
+                                }}
+                            >
+                                <SelectTrigger className="h-14 rounded-2xl border-2 font-bold text-sm bg-card shadow-sm border-primary/10">
+                                    <SelectValue placeholder="Toque para elegir..." />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl p-2 shadow-2xl border-primary/20 max-h-[300px]">
+                                    {PARENT_CATEGORIES.map(cat => (
+                                        <SelectItem key={cat} value={cat} className="rounded-xl font-bold text-xs py-3 px-4 cursor-pointer">
+                                            {cat}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-muted/30 p-6 rounded-[2.5rem] border border-border">
                     <div className="flex items-center gap-3">
