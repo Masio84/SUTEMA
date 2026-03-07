@@ -99,6 +99,38 @@ export async function updatePassword(password: string) {
     return { success: true }
 }
 
+/** 
+ * Admin: Directly change another user's password
+ * REQUIRES SUPABASE_SERVICE_ROLE_KEY in .env
+ */
+export async function adminUpdatePassword(userId: string, newPassword: string) {
+    const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!serviceKey) return { error: "Falta SUPABASE_SERVICE_ROLE_KEY para realizar cambios directos de contraseña." }
+
+    const supabaseAdmin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceKey,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }
+    )
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(
+        userId,
+        { password: newPassword }
+    )
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/configuracion')
+    return { success: true }
+}
+
 export async function updateUser(id: string, data: {
     nombre_completo: string
     rol: 'admin' | 'capturista'

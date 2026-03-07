@@ -5,61 +5,20 @@ import { createClient } from '@/lib/supabase/server'
 import * as workersService from '@/lib/services/workers'
 import { getAdscripciones } from '@/lib/services/adscripciones'
 
-// ──────────────────────────────────────────────
-// Text helpers
-// ──────────────────────────────────────────────
-
-/** Remove accents/diacritics for fuzzy matching */
-const removeAccents = (str: string) =>
-    str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-
-/** Converts "JUAN PABLO" or "juan pablo" to "Juan Pablo" */
-const toTitleCase = (str: string): string =>
-    str
-        .toLowerCase()
-        .replace(/\b\w/g, (c) => c.toUpperCase())
-        .trim()
-
-// ──────────────────────────────────────────────
-// Field normalizers (autocorrect)
-// ──────────────────────────────────────────────
-
-/** Normalize sexo: handles abbreviations, typos, incomplete words */
-const normalizeSexo = (raw: string): 'Masculino' | 'Femenino' | 'Otro' => {
-    if (!raw) return 'Masculino'
-    const s = removeAccents(raw.toLowerCase().trim())
-    if (/^(m|masc|masculine|hombre|h|masculino)/.test(s)) return 'Masculino'
-    if (/^(f|fem|femenino|feme|mujer|w|woman)/.test(s)) return 'Femenino'
-    return 'Otro'
+export async function getAdscripcionesList() {
+    return await getAdscripciones()
 }
 
-/**
- * Normalize estado_civil: handles abbreviations, typos, incomplete words
- * DB enum: 'Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a', 'Unión Libre'
- */
-const normalizeEstadoCivil = (raw: string): string => {
-    if (!raw) return 'Soltero/a'
-    const s = removeAccents(raw.toLowerCase().trim())
-    if (/^(sol|solt|solter|soltero|soltera)/.test(s)) return 'Soltero/a'
-    if (/^(cas|casad|casado|casada)/.test(s)) return 'Casado/a'
-    if (/^(div|divorc|divorciad|divorciado|divorciada)/.test(s)) return 'Divorciado/a'
-    if (/^(viu|viud|viudo|viuda)/.test(s)) return 'Viudo/a'
-    if (/^(uni|union libre|unio|uli|u\.l\.|ul)/.test(s)) return 'Unión Libre'
-    return 'Soltero/a' // safe default
-}
+import {
+    removeAccents,
+    toTitleCase,
+    normalizeSexo,
+    normalizeEstadoCivil,
+    normalizeEstatus,
+    getOfficialAdscripcionName
+} from '@/lib/utils/normalization'
 
-/**
- * Normalize estatus
- * DB constraint: trabajadores_estatus_check allows 'Activo', 'Inactivo', 'Baja', 'Jubilado'
- */
-const normalizeEstatus = (raw: string | null | undefined): string => {
-    if (!raw) return 'activo'
-    const s = removeAccents(raw.toLowerCase().trim())
-    if (/jubil/.test(s)) return 'jubilado'
-    if (/baja/.test(s)) return 'baja'
-    if (/inact/.test(s)) return 'inactivo'
-    return 'activo'
-}
+
 
 /** Normalize tiene_hijos: SI/S/1/YES/any positive number → true, else false */
 const normalizeTieneHijos = (raw: string | null | undefined, cantidadHijos: number): boolean => {
@@ -70,37 +29,6 @@ const normalizeTieneHijos = (raw: string | null | undefined, cantidadHijos: numb
     const asNum = parseFloat(s)
     if (!isNaN(asNum) && asNum > 0) return true
     return /^(si|s|yes|y|true|t)$/.test(s)
-}
-
-// ──────────────────────────────────────────────
-// Adscripción fuzzy-matcher
-// ──────────────────────────────────────────────
-
-/** Smart matcher using highly distinctive keywords/regex to catch typos */
-const getOfficialAdscripcionName = (rawInput: string): string | null => {
-    if (!rawInput) return null
-
-    const normalized = removeAccents(rawInput.toLowerCase().trim())
-
-    if (normalized.includes('pabell') || normalized.includes('arteaga')) return 'Hospital General de Pabellón de Arteaga'
-    if (normalized.includes('rincon') || normalized.includes('romo')) return 'Hospital General de Rincón de Romo'
-    if (normalized.includes('calvill')) return 'Hospital General de Calvillo'
-    if (normalized.includes('tercer milenio') || normalized.includes('3er milenio') || normalized.includes('tercer m')) return 'Hospital General Tercer Milenio'
-    if (normalized.includes('mujer')) return 'Hospital de la Mujer'
-
-    if (normalized.includes('oficina') || normalized.match(/^o\.?c\.?\b/)) return 'Oficinas Centrales'
-
-    if (normalized.includes('distrito sanitario 1') || normalized.match(/\bds\s*1\b/) || normalized.match(/\bdistrito\s*1\b/) || normalized.includes('sanitario 1')) return 'Distrito Sanitario 1'
-    if (normalized.includes('distrito sanitario 2') || normalized.match(/\bds\s*2\b/) || normalized.match(/\bdistrito\s*2\b/) || normalized.includes('sanitario 2')) return 'Distrito Sanitario 2'
-    if (normalized.includes('distrito sanitario 3') || normalized.match(/\bds\s*3\b/) || normalized.match(/\bdistrito\s*3\b/) || normalized.includes('sanitario 3')) return 'Distrito Sanitario 3'
-
-    if (normalized.includes('lesp') || normalized.includes('estatal de salud publica')) return 'LESP'
-    if (normalized.includes('cets') || normalized.includes('transfusion sanguinea')) return 'CETS'
-    if (normalized.includes('vih') || normalized.includes('capacits')) return 'VIH'
-    if (normalized.includes('uneme')) return 'UNEME'
-    if (normalized.includes('seem') || normalized.includes('emergencias medicas')) return 'SEEM'
-
-    return rawInput // Return verbatim if no keyword matches – hoping for exact DB match later
 }
 
 // ──────────────────────────────────────────────
@@ -128,7 +56,7 @@ const parseDate = (raw: any): string | null => {
 // Main export
 // ──────────────────────────────────────────────
 
-export async function importFromExcel(rows: any[]) {
+export async function importFromExcel(rows: any[], mappings?: Record<string, string>) {
     try {
         const supabase = await createClient()
 
@@ -163,8 +91,15 @@ export async function importFromExcel(rows: any[]) {
             // ── ÁREA / DEPENDENCIA (alias) ─────────────────────
             // "DEPENDENCIA" and "AREA" both point to adscripcion_id
             const rawArea = (getVal('AREA') || getVal('DEPENDENCIA'))?.toString() || ''
-            const officialName = getOfficialAdscripcionName(rawArea)
-            const adscId = officialName ? adscMap.get(officialName.toLowerCase().trim()) : null
+
+            // Check if there's a manual mapping from the user
+            let officialName = mappings?.[rawArea] || getOfficialAdscripcionName(rawArea)
+            let adscId = officialName ? adscMap.get(officialName.toLowerCase().trim()) : null
+
+            // If still not found, try to look up the raw name directly in the map
+            if (!adscId && rawArea) {
+                adscId = adscMap.get(rawArea.toLowerCase().trim())
+            }
 
             // ── Mandatory field validation ─────────────────────
             const rawNombre = getVal('NOMBRE')?.toString().trim()
