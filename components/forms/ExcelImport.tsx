@@ -54,28 +54,35 @@ const get = (row: any, ...keys: string[]): string => {
 }
 
 // Apply client-side autocorrect to a raw row for preview purposes
-const applyAutocorrect = (row: any): any => ({
-    ...row,
-    _nombre: toTitleCase(get(row, 'NOMBRE')),
-    _apellido_paterno: toTitleCase(get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')),
-    _apellido_materno: toTitleCase(get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')),
-    _curp: get(row, 'CURP').toUpperCase(),
-    _clave_elector: get(row, 'CLAVE DE ELECTOR', 'CLAVE_DE_ELECTOR').toUpperCase(),
-    _sexo: normalizeSexo(get(row, 'SEXO')),
-    _estado_civil: normalizeEstadoCivil(get(row, 'ESTADO CIVIL', 'ESTADO_CIVIL')),
-    _telefono: get(row, 'TELEFONO'),
-    _fecha_nacimiento: get(row, 'FECHA DE NACIMIENTO', 'FECHA_DE_NACIMIENTO'),
-    _calle: toTitleCase(get(row, 'CALLE')),
-    _num_ext: get(row, 'NUM EXT', 'NUM_EXT', 'NUMERO EXTERIOR'),
-    _num_int: get(row, 'NUM INT', 'NUM_INT', 'NUMERO INTERIOR'),
-    _colonia: toTitleCase(get(row, 'COLONIA')),
-    _municipio: toTitleCase(get(row, 'MUNICIPIO') || 'Aguascalientes'),
-    _seccion: get(row, 'SECCION'),
-    _area: get(row, 'AREA', 'DEPENDENCIA'),
-    _tiene_hijos: get(row, 'TIENE HIJOS', 'TIENE_HIJOS'),
-    _cantidad_hijos: get(row, 'CANTIDAD DE HIJOS', 'CANTIDAD_DE_HIJOS'),
-    _estatus: normalizeEstatus(get(row, 'ESTATUS')),
-})
+const applyAutocorrect = (row: any): any => {
+    const n = get(row, 'NOMBRE', 'NOMBRE COMPLETO', 'NOMBRE_COMPLETO')
+    const ap = get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')
+    const am = get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')
+    const nombreFinal = n || (ap || am ? `${ap} ${am}`.trim() : '')
+
+    return {
+        ...row,
+        _nombre: toTitleCase(nombreFinal),
+        _apellido_paterno: toTitleCase(ap),
+        _apellido_materno: toTitleCase(am),
+        _curp: get(row, 'CURP').toUpperCase(),
+        _clave_elector: get(row, 'CLAVE DE ELECTOR', 'CLAVE_DE_ELECTOR').toUpperCase(),
+        _sexo: normalizeSexo(get(row, 'SEXO')),
+        _estado_civil: normalizeEstadoCivil(get(row, 'ESTADO CIVIL', 'ESTADO_CIVIL')),
+        _telefono: get(row, 'TELEFONO'),
+        _fecha_nacimiento: get(row, 'FECHA DE NACIMIENTO', 'FECHA_DE_NACIMIENTO'),
+        _calle: toTitleCase(get(row, 'CALLE')),
+        _num_ext: get(row, 'NUM EXT', 'NUM_EXT', 'NUMERO EXTERIOR'),
+        _num_int: get(row, 'NUM INT', 'NUM_INT', 'NUMERO INTERIOR'),
+        _colonia: toTitleCase(get(row, 'COLONIA')),
+        _municipio: toTitleCase(get(row, 'MUNICIPIO') || 'Aguascalientes'),
+        _seccion: get(row, 'SECCION'),
+        _area: get(row, 'AREA', 'DEPENDENCIA'),
+        _tiene_hijos: get(row, 'TIENE HIJOS', 'TIENE_HIJOS'),
+        _cantidad_hijos: get(row, 'CANTIDAD DE HIJOS', 'CANTIDAD_DE_HIJOS'),
+        _estatus: normalizeEstatus(get(row, 'ESTATUS')),
+    }
+}
 
 // ─────────────────────────────────────────────
 // Preview column definitions
@@ -197,6 +204,7 @@ export default function ExcelImport() {
                 // We also consider things matched by the fuzzy matcher as "known" if they exist in DB
                 // For simplicity, let's just find what is NOT in the official list and NOT matched by fuzzy logic
                 const unknown = uniqueAreas.filter(area => {
+                    let rawNombre = (get(sanitized[0], 'NOMBRE') || get(sanitized[0], 'NOMBRE COMPLETO') || get(sanitized[0], 'NOMBRE_COMPLETO'))?.toString().trim()
                     const norm = area.toLowerCase().trim()
                     if (knownNames.has(norm)) return false
 
@@ -298,13 +306,20 @@ export default function ExcelImport() {
     // ── Mapping View ──────────────────────────────────────────────
     if (isMappingMode && unmappedAreas.length > 0) {
         // Collect records that need mapping
-        const recordsNeedingMapping = (rawData || []).map((row, idx) => ({
-            index: idx,
-            nombreSolo: String(get(row, 'NOMBRE')),
-            apellidoPaterno: String(get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')),
-            nombreCompleto: `${get(row, 'NOMBRE')} ${get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')} ${get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')}`.trim(),
-            rawArea: get(row, 'AREA', 'DEPENDENCIA')
-        })).filter(r => unmappedAreas.includes(r.rawArea))
+        const recordsNeedingMapping = (rawData || []).map((row, idx) => {
+            const n = String(get(row, 'NOMBRE', 'NOMBRE COMPLETO', 'NOMBRE_COMPLETO')).trim();
+            const ap = String(get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')).trim();
+            const am = String(get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')).trim();
+
+            // Smart identity: Use A if valid, otherwise combine B and C
+            const nombreIdentificado = n || (ap || am ? `${ap} ${am}`.trim() : 'Sin Nombre');
+
+            return {
+                index: idx,
+                nombreIdentificado,
+                rawArea: get(row, 'AREA', 'DEPENDENCIA')
+            };
+        }).filter(r => unmappedAreas.includes(r.rawArea))
 
         const mappedRecordCount = recordsNeedingMapping.filter(r => areaMappings[r.index]).length
         const allRecordsMapped = mappedRecordCount === recordsNeedingMapping.length
@@ -338,9 +353,8 @@ export default function ExcelImport() {
                             <TableHeader className="bg-muted/50 sticky top-0 z-20">
                                 <TableRow className="border-b border-border">
                                     <TableHead className="w-12 px-3 py-2.5 font-black uppercase tracking-widest text-[9px] text-muted-foreground">#</TableHead>
-                                    <TableHead className="w-[18%] font-black uppercase tracking-widest text-[9px] px-3">Nombre(s)</TableHead>
-                                    <TableHead className="w-[18%] font-black uppercase tracking-widest text-[9px] px-3">Apellido Paterno</TableHead>
-                                    <TableHead className="w-[30%] font-black uppercase tracking-widest text-[9px] px-3">Adscripción en Excel</TableHead>
+                                    <TableHead className="w-[45%] font-black uppercase tracking-widest text-[9px] px-3">Nombre del Trabajador (Encontrado en Excel)</TableHead>
+                                    <TableHead className="w-[30%] font-black uppercase tracking-widest text-[9px] px-3">Adscripción Original</TableHead>
                                     <TableHead className="w-[200px] font-black uppercase tracking-widest text-[9px] px-3 text-primary">Categoría Oficial</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -348,8 +362,7 @@ export default function ExcelImport() {
                                 {recordsNeedingMapping.map((r, i) => (
                                     <TableRow key={r.index} className="group hover:bg-primary/5 transition-colors border-border">
                                         <TableCell className="px-3 py-1.5 font-mono text-[9px] text-muted-foreground font-bold">{i + 1}</TableCell>
-                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombreCompleto}>{r.nombreSolo || '—'}</TableCell>
-                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombreCompleto}>{r.apellidoPaterno || '—'}</TableCell>
+                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombreIdentificado}>{r.nombreIdentificado}</TableCell>
                                         <TableCell className="px-3 py-1.5 truncate">
                                             <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-[10px] px-2 py-0 font-medium truncate max-w-full" title={r.rawArea}>
                                                 {r.rawArea}

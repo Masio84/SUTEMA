@@ -92,8 +92,9 @@ export async function importFromExcel(rows: any[], mappings?: Record<string, str
             // "DEPENDENCIA" and "AREA" both point to adscripcion_id
             const rawArea = (getVal('AREA') || getVal('DEPENDENCIA'))?.toString() || ''
 
-            // Check if there's a manual mapping from the user
-            let officialName = mappings?.[rawArea] || getOfficialAdscripcionName(rawArea)
+            // Check if there's a manual mapping from the user (indexed by row index or raw string)
+            const manualMatch = mappings?.[index] || mappings?.[rawArea]
+            let officialName = manualMatch || getOfficialAdscripcionName(rawArea)
             let adscId = officialName ? adscMap.get(officialName.toLowerCase().trim()) : null
 
             // If still not found, try to look up the raw name directly in the map
@@ -102,11 +103,19 @@ export async function importFromExcel(rows: any[], mappings?: Record<string, str
             }
 
             // ── Mandatory field validation ─────────────────────
-            const rawNombre = getVal('NOMBRE')?.toString().trim()
+            let rawNombre = (getVal('NOMBRE') || getVal('NOMBRE COMPLETO') || getVal('NOMBRE_COMPLETO'))?.toString().trim()
+            const rawApeP = (getVal('PRIMER APELLIDO') || getVal('APELLIDO PATERNO'))?.toString().trim() || ''
+            const rawApeM = (getVal('SEGUNDO APELLIDO') || getVal('APELLIDO MATERNO'))?.toString().trim() || ''
+
+            // Smart name fallback: if Column A is empty but others have data
+            if (!rawNombre && (rawApeP || rawApeM)) {
+                rawNombre = `${rawApeP} ${rawApeM}`.trim()
+            }
+
             if (!rawNombre || !curp || !adscId) {
                 // Build human-readable reason
                 const reasons: string[] = []
-                if (!rawNombre) reasons.push('Nombre vacío')
+                if (!rawNombre) reasons.push('Nombre vacío (no se encontró en Columna A ni en apellidos)')
                 if (!curp) reasons.push('CURP vacío o faltante')
                 if (!adscId) {
                     if (!rawArea) reasons.push('Área/Dependencia no especificada')
@@ -130,12 +139,8 @@ export async function importFromExcel(rows: any[], mappings?: Record<string, str
 
             // ── Name fields (title case correction) ───────────
             const nombre = toTitleCase(rawNombre)
-            const apellidoPaterno = toTitleCase(
-                (getVal('PRIMER APELLIDO') || getVal('APELLIDO PATERNO'))?.toString().trim() || ''
-            )
-            const apellidoMaterno = toTitleCase(
-                (getVal('SEGUNDO APELLIDO') || getVal('APELLIDO MATERNO'))?.toString().trim() || ''
-            )
+            const apellidoPaterno = toTitleCase(rawApeP)
+            const apellidoMaterno = toTitleCase(rawApeM)
 
             // ── Autocorrected fields ───────────────────────────
             const sexo = normalizeSexo(getVal('SEXO')?.toString() || '')
