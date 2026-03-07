@@ -123,7 +123,17 @@ export default function ConsultasPage() {
             Estatus: w.estatus,
             Antiguedad: `${calculateSeniority(w.fecha_ingreso)} años`
         }))
-        exportToPDF(exportData, ['Nombre', 'CURP', 'Adscripcion', 'Estatus', 'Antiguedad'], 'Padrón_SUTEMA')
+        exportToPDF(
+            exportData,
+            [
+                { id: 'Nombre', label: 'Nombre' },
+                { id: 'CURP', label: 'CURP' },
+                { id: 'Adscripcion', label: 'Adscripción' },
+                { id: 'Estatus', label: 'Estatus' },
+                { id: 'Antiguedad', label: 'Antigüedad' }
+            ],
+            'Padrón_SUTEMA'
+        )
         toast.success("Generando PDF...")
     }
 
