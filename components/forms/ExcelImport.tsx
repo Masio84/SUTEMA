@@ -300,7 +300,9 @@ export default function ExcelImport() {
         // Collect records that need mapping
         const recordsNeedingMapping = (rawData || []).map((row, idx) => ({
             index: idx,
-            nombre: `${get(row, 'NOMBRE')} ${get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')} ${get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')}`,
+            nombreSolo: String(get(row, 'NOMBRE')),
+            apellidoPaterno: String(get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')),
+            nombreCompleto: `${get(row, 'NOMBRE')} ${get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')} ${get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')}`.trim(),
             rawArea: get(row, 'AREA', 'DEPENDENCIA')
         })).filter(r => unmappedAreas.includes(r.rawArea))
 
@@ -332,20 +334,22 @@ export default function ExcelImport() {
 
                 <Card className="rounded-[2.5rem] border-border shadow-xl overflow-hidden bg-card/50 backdrop-blur-xl">
                     <div className="max-h-[450px] overflow-auto">
-                        <Table className="table-fixed w-full">
+                        <Table className="table-fixed w-full min-w-[1000px]">
                             <TableHeader className="bg-muted/50 sticky top-0 z-20">
                                 <TableRow className="border-b border-border">
                                     <TableHead className="w-12 px-3 py-2.5 font-black uppercase tracking-widest text-[9px] text-muted-foreground">#</TableHead>
-                                    <TableHead className="w-[35%] font-black uppercase tracking-widest text-[9px] px-3">Nombre Completo</TableHead>
+                                    <TableHead className="w-[18%] font-black uppercase tracking-widest text-[9px] px-3">Nombre(s)</TableHead>
+                                    <TableHead className="w-[18%] font-black uppercase tracking-widest text-[9px] px-3">Apellido Paterno</TableHead>
                                     <TableHead className="w-[30%] font-black uppercase tracking-widest text-[9px] px-3">Adscripción en Excel</TableHead>
-                                    <TableHead className="w-[180px] font-black uppercase tracking-widest text-[9px] px-3 text-primary">Categoría Oficial</TableHead>
+                                    <TableHead className="w-[200px] font-black uppercase tracking-widest text-[9px] px-3 text-primary">Categoría Oficial</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {recordsNeedingMapping.map((r, i) => (
                                     <TableRow key={r.index} className="group hover:bg-primary/5 transition-colors border-border">
                                         <TableCell className="px-3 py-1.5 font-mono text-[9px] text-muted-foreground font-bold">{i + 1}</TableCell>
-                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombre}>{r.nombre}</TableCell>
+                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombreCompleto}>{r.nombreSolo || '—'}</TableCell>
+                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombreCompleto}>{r.apellidoPaterno || '—'}</TableCell>
                                         <TableCell className="px-3 py-1.5 truncate">
                                             <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-[10px] px-2 py-0 font-medium truncate max-w-full" title={r.rawArea}>
                                                 {r.rawArea}
