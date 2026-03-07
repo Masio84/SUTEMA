@@ -303,6 +303,9 @@ export default function ExcelImport() {
             rawArea: get(row, 'AREA', 'DEPENDENCIA')
         })).filter(r => unmappedAreas.includes(r.rawArea))
 
+        const mappedRecordCount = recordsNeedingMapping.filter(r => areaMappings[r.index]).length
+        const allRecordsMapped = mappedRecordCount === recordsNeedingMapping.length
+
         return (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-[2.5rem] relative overflow-hidden">
@@ -318,8 +321,9 @@ export default function ExcelImport() {
                                 ¡Atención! Se requiere Mapeo de Áreas
                             </h3>
                             <p className="text-amber-800/80 dark:text-amber-400/60 font-medium text-sm mt-1 max-w-2xl">
-                                Hemos detectado <span className="font-bold underline text-amber-600 dark:text-amber-400">{unmappedAreas.length}</span> áreas en el Excel que no coinciden con nuestro catálogo oficial.
-                                Por favor, asocia cada registro a la categoría correspondiente para proceder.
+                                Hemos detectado <span className="font-bold underline text-amber-600 dark:text-amber-400">{unmappedAreas.length}</span> áreas únicas con inconsistencias.
+                                Por favor, asocia cada registro a la categoría correspondiente.
+                                <span className="block mt-1 text-xs opacity-70 italic">Nota: Registros marcados como "ISSEA" se deben asignar individualmente.</span>
                             </p>
                         </div>
                     </div>
@@ -330,7 +334,7 @@ export default function ExcelImport() {
                         <Table className="table-fixed w-full">
                             <TableHeader className="bg-muted/50 sticky top-0 z-20">
                                 <TableRow className="border-b border-border">
-                                    <TableHead className="w-10 px-3 py-2.5 font-black uppercase tracking-widest text-[9px] text-muted-foreground">#</TableHead>
+                                    <TableHead className="w-12 px-3 py-2.5 font-black uppercase tracking-widest text-[9px] text-muted-foreground">#</TableHead>
                                     <TableHead className="w-[35%] font-black uppercase tracking-widest text-[9px] px-3">Nombre Completo</TableHead>
                                     <TableHead className="w-[30%] font-black uppercase tracking-widest text-[9px] px-3">Adscripción en Excel</TableHead>
                                     <TableHead className="w-[180px] font-black uppercase tracking-widest text-[9px] px-3 text-primary">Categoría Oficial</TableHead>
@@ -338,7 +342,7 @@ export default function ExcelImport() {
                             </TableHeader>
                             <TableBody>
                                 {recordsNeedingMapping.map((r, i) => (
-                                    <TableRow key={i} className="group hover:bg-primary/5 transition-colors border-border">
+                                    <TableRow key={r.index} className="group hover:bg-primary/5 transition-colors border-border">
                                         <TableCell className="px-3 py-1.5 font-mono text-[9px] text-muted-foreground font-bold">{i + 1}</TableCell>
                                         <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombre}>{r.nombre}</TableCell>
                                         <TableCell className="px-3 py-1.5 truncate">
@@ -348,14 +352,25 @@ export default function ExcelImport() {
                                         </TableCell>
                                         <TableCell className="px-3 py-1.5">
                                             <Select
-                                                value={areaMappings[r.rawArea] || ''}
+                                                value={areaMappings[r.index] || ''}
                                                 onValueChange={(v) => {
-                                                    setAreaMappings(prev => ({ ...prev, [r.rawArea]: v }))
+                                                    setAreaMappings(prev => {
+                                                        const next = { ...prev, [r.index]: v }
+                                                        // If it's NOT ISSEA, apply to all records sharing the same raw string
+                                                        if (r.rawArea.toUpperCase().trim() !== 'ISSEA') {
+                                                            recordsNeedingMapping.forEach(other => {
+                                                                if (other.rawArea === r.rawArea) {
+                                                                    next[other.index] = v
+                                                                }
+                                                            })
+                                                        }
+                                                        return next
+                                                    })
                                                 }}
                                             >
                                                 <SelectTrigger className={cn(
                                                     "h-8 w-full rounded-lg font-bold transition-all border text-xs",
-                                                    areaMappings[r.rawArea]
+                                                    areaMappings[r.index]
                                                         ? "border-primary bg-primary/10 text-primary shadow-sm"
                                                         : "border-border bg-background text-muted-foreground"
                                                 )}>
@@ -383,7 +398,7 @@ export default function ExcelImport() {
                             <CheckCircle2 className="h-5 w-5" />
                         </div>
                         <p className="text-sm font-black text-foreground">
-                            {Object.keys(areaMappings).length} de {unmappedAreas.length} áreas únicas mapeadas
+                            {mappedRecordCount} de {recordsNeedingMapping.length} registros mapeados
                         </p>
                     </div>
                     <div className="flex gap-4 w-full md:w-auto">
@@ -391,15 +406,14 @@ export default function ExcelImport() {
                             Cancelar
                         </Button>
                         <Button
-                            disabled={Object.keys(areaMappings).length < unmappedAreas.length}
+                            disabled={!allRecordsMapped}
                             onClick={() => {
                                 if (previewData) {
-                                    const updated = previewData.map(row => {
-                                        const rawArea = row['_area']
-                                        if (areaMappings[rawArea]) {
-                                            return { ...row, _area: areaMappings[rawArea] }
+                                    const updated = [...previewData]
+                                    recordsNeedingMapping.forEach(r => {
+                                        if (areaMappings[r.index]) {
+                                            updated[r.index] = { ...updated[r.index], _area: areaMappings[r.index] }
                                         }
-                                        return row
                                     })
                                     setPreviewData(updated)
                                 }
