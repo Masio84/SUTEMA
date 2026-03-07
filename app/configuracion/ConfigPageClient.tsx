@@ -38,6 +38,7 @@ export default function ConfigPageClient() {
     const [search, setSearch] = useState('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<UserSystem | null>(null)
+    const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
     const supabase = createClient()
     const router = useRouter()
@@ -78,23 +79,34 @@ export default function ConfigPageClient() {
 
     const handleDelete = async (user: UserSystem) => {
         if (confirm(`¿Está seguro de eliminar a ${user.nombre}?`)) {
-            const result = await deleteUser(user.id)
-            if (result.error) {
-                toast.error(result.error)
-            } else {
-                toast.success("Usuario eliminado")
-                fetchUsers()
+            setActionLoadingId(user.id)
+            try {
+                const result = await deleteUser(user.id)
+                if (result.error) {
+                    toast.error(result.error)
+                } else {
+                    toast.success("Usuario eliminado")
+                    fetchUsers()
+                }
+            } finally {
+                setActionLoadingId(null)
             }
         }
     }
 
-    const handleReset = async (email: string) => {
+    const handleReset = async (user: UserSystem) => {
+        if (!user.usuario) return
         if (confirm("Se enviará un enlace de recuperación al correo. ¿Continuar?")) {
-            const result = await resetPassword(email)
-            if (result.error) {
-                toast.error(result.error)
-            } else {
-                toast.success(result.message)
+            setActionLoadingId(user.id)
+            try {
+                const result = await resetPassword(user.usuario)
+                if (result.error) {
+                    toast.error(result.error)
+                } else {
+                    toast.success(result.message || "Enlace enviado")
+                }
+            } finally {
+                setActionLoadingId(null)
             }
         }
     }
@@ -197,9 +209,14 @@ export default function ConfigPageClient() {
                                                     size="icon"
                                                     className="h-10 w-10 rounded-xl hover:bg-muted"
                                                     title="Restablecer Contraseña"
-                                                    onClick={() => user.usuario && handleReset(user.usuario)}
+                                                    onClick={() => handleReset(user)}
+                                                    disabled={actionLoadingId === user.id}
                                                 >
-                                                    <Lock className="h-4 w-4 text-muted-foreground" />
+                                                    {actionLoadingId === user.id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                                    ) : (
+                                                        <Lock className="h-4 w-4 text-muted-foreground" />
+                                                    )}
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
@@ -214,8 +231,13 @@ export default function ConfigPageClient() {
                                                     size="icon"
                                                     className="h-10 w-10 rounded-xl hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
                                                     onClick={() => handleDelete(user)}
+                                                    disabled={actionLoadingId === user.id}
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    {actionLoadingId === user.id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <Trash2 className="h-4 w-4" />
+                                                    )}
                                                 </Button>
                                             </TableCell>
                                         </motion.tr>
