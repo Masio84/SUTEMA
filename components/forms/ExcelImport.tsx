@@ -351,25 +351,27 @@ export default function ExcelImport() {
                 <Card className="rounded-[2.5rem] border-border shadow-xl overflow-hidden bg-card/50 backdrop-blur-xl">
                     <div className="max-h-[450px] overflow-auto">
                         <Table className="table-fixed w-full min-w-[1000px]">
-                            <TableHeader className="bg-muted/50 sticky top-0 z-20">
-                                <TableRow className="border-b border-border">
-                                    <TableHead className="w-12 px-3 py-2.5 font-black uppercase tracking-widest text-[9px] text-muted-foreground">#</TableHead>
-                                    <TableHead className="w-[45%] font-black uppercase tracking-widest text-[9px] px-3">Nombre del Trabajador (Encontrado en Excel)</TableHead>
-                                    <TableHead className="w-[30%] font-black uppercase tracking-widest text-[9px] px-3">Adscripción Original</TableHead>
-                                    <TableHead className="w-[200px] font-black uppercase tracking-widest text-[9px] px-3 text-primary">Categoría Oficial</TableHead>
+                            <TableHeader className="bg-muted sticky top-0 z-20 shadow-sm border-b-2 border-border">
+                                <TableRow className="border-b border-border hover:bg-transparent">
+                                    <TableHead className="w-12 px-2 py-2 font-black uppercase tracking-widest text-[10px] text-foreground border-r border-border/50">#</TableHead>
+                                    <TableHead className="w-[35%] font-black uppercase tracking-widest text-[10px] px-2 py-2 leading-tight text-foreground">
+                                        Nombre del Trabajador<br /><span className="text-[8px] opacity-60">(Encontrado en Excel)</span>
+                                    </TableHead>
+                                    <TableHead className="w-[30%] font-black uppercase tracking-widest text-[10px] px-2 py-2 text-foreground">Adscripción Original</TableHead>
+                                    <TableHead className="w-[200px] font-black uppercase tracking-widest text-[10px] px-2 py-2 text-primary text-center">Categoría Oficial</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {recordsNeedingMapping.map((r, i) => (
-                                    <TableRow key={r.index} className="group hover:bg-primary/5 transition-colors border-border">
-                                        <TableCell className="px-3 py-1.5 font-mono text-[9px] text-muted-foreground font-bold">{i + 1}</TableCell>
-                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombreIdentificado}>{r.nombreIdentificado}</TableCell>
-                                        <TableCell className="px-3 py-1.5 truncate">
-                                            <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-[10px] px-2 py-0 font-medium truncate max-w-full" title={r.rawArea}>
+                                    <TableRow key={r.index} className="group hover:bg-primary/5 transition-colors border-b border-border/50">
+                                        <TableCell className="px-2 py-1 font-mono text-[9px] text-muted-foreground font-bold border-r border-border/50 bg-muted/20 text-center">{i + 1}</TableCell>
+                                        <TableCell className="px-2 py-1 font-bold text-[11px] text-foreground uppercase truncate" title={r.nombreIdentificado}>{r.nombreIdentificado}</TableCell>
+                                        <TableCell className="px-2 py-1 truncate">
+                                            <Badge variant="outline" className="bg-muted/30 text-muted-foreground border-border/50 text-[9px] px-1.5 py-0 font-medium truncate max-w-full" title={r.rawArea}>
                                                 {r.rawArea}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="px-3 py-1.5">
+                                        <TableCell className="px-2 py-0.5">
                                             <Select
                                                 value={areaMappings[r.index] || ''}
                                                 onValueChange={(v) => {
@@ -388,12 +390,12 @@ export default function ExcelImport() {
                                                 }}
                                             >
                                                 <SelectTrigger className={cn(
-                                                    "h-8 w-full rounded-lg font-bold transition-all border text-xs",
+                                                    "h-7 w-full rounded-md font-bold transition-all border text-[10px] px-2",
                                                     areaMappings[r.index]
-                                                        ? "border-primary bg-primary/10 text-primary shadow-sm"
-                                                        : "border-border bg-background text-muted-foreground"
+                                                        ? "border-primary/50 bg-primary/5 text-primary shadow-sm"
+                                                        : "border-border bg-background/50 text-muted-foreground hover:border-primary/30"
                                                 )}>
-                                                    <SelectValue placeholder="Asignar..." />
+                                                    <SelectValue placeholder="Seleccionar..." />
                                                 </SelectTrigger>
                                                 <SelectContent className="rounded-xl p-1 shadow-2xl border-primary/20">
                                                     {PARENT_CATEGORIES.map(cat => (
