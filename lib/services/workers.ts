@@ -117,7 +117,7 @@ export async function updateWorker(id: string, data: WorkerFormValues) {
         .update({
             ...data,
             fecha_ingreso: data.fecha_ingreso.toISOString(),
-            fecha_actualizacion: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
         })
         .eq('id', id)
 

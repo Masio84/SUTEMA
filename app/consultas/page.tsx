@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
+import { logActivity } from '../actions/users'
 import WorkerDetailPanel from '@/components/workers/WorkerDetailPanel'
 import {
     Select,
@@ -69,6 +70,10 @@ export default function ConsultasPage() {
             })
             setWorkers(result.data as Worker[])
             setTotalCount(result.count)
+
+            if (search.trim().length > 2) {
+                logActivity("Búsqueda", `Buscó: "${search}" en el padrón.`)
+            }
         } catch (e) {
             toast.error("Error al cargar datos")
         } finally {

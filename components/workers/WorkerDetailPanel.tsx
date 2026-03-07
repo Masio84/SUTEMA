@@ -302,7 +302,19 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                                             }
                                         />
                                     </div>
-                                    <ReadValue label="Fecha Ingreso" value={worker.fecha_ingreso instanceof Date ? worker.fecha_ingreso.toLocaleDateString('es-MX') : worker.fecha_ingreso} />
+                                    <FieldRow
+                                        label="Fecha Ingreso"
+                                        isEditing={isEditing}
+                                        readValue={worker.fecha_ingreso instanceof Date ? worker.fecha_ingreso.toLocaleDateString('es-MX') : worker.fecha_ingreso}
+                                        editNode={
+                                            <Input
+                                                type="date"
+                                                value={form.fecha_ingreso ? (form.fecha_ingreso instanceof Date ? form.fecha_ingreso.toISOString().split('T')[0] : form.fecha_ingreso) : ''}
+                                                onChange={e => setField('fecha_ingreso', e.target.value)}
+                                                className="h-9 rounded-xl mt-1"
+                                            />
+                                        }
+                                    />
                                     <ReadValue label="Estatus" value={worker.estatus?.charAt(0).toUpperCase() + worker.estatus?.slice(1)} />
                                 </div>
 

@@ -86,11 +86,23 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
     const getSeniority = (date: string) => {
         const start = new Date(date)
         const now = new Date()
+
         let years = now.getFullYear() - start.getFullYear()
-        if (now.getMonth() < start.getMonth() || (now.getMonth() === start.getMonth() && now.getDate() < start.getDate())) {
-            years--
+        let months = now.getMonth() - start.getMonth()
+        let days = now.getDate() - start.getDate()
+
+        if (days < 0) {
+            months--
+            const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+            days += lastMonth.getDate()
         }
-        return years
+
+        if (months < 0) {
+            years--
+            months += 12
+        }
+
+        return { years, months, days }
     }
 
     const getSortIcon = (col: string) => {
@@ -172,7 +184,22 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        <span className="text-sm font-black">{getSeniority(worker.fecha_ingreso)} <span className="text-[10px] text-muted-foreground uppercase ml-1">AÑOS</span></span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-black">
+                                                {getSeniority(worker.fecha_ingreso).years}
+                                                <span className="text-[10px] text-muted-foreground uppercase ml-1 mr-2 tracking-tighter">Años</span>
+                                            </span>
+                                            <div className="flex gap-2">
+                                                <span className="text-[10px] font-bold text-zinc-500 uppercase">
+                                                    {getSeniority(worker.fecha_ingreso).months}
+                                                    <span className="ml-0.5 opacity-60">Meses</span>
+                                                </span>
+                                                <span className="text-[10px] font-bold text-zinc-500 uppercase">
+                                                    {getSeniority(worker.fecha_ingreso).days}
+                                                    <span className="ml-0.5 opacity-60">Días</span>
+                                                </span>
+                                            </div>
+                                        </div>
                                     </TableCell>
                                     <TableCell>{getEstatusBadge(worker.estatus)}</TableCell>
                                     <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>

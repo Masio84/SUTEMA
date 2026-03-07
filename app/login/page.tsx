@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Loader2, Lock, User } from 'lucide-react'
+import { Loader2, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation'
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
     const supabase = createClient()
@@ -151,13 +152,25 @@ export default function LoginPage() {
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50" />
                                 <Input
                                     id="password"
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
-                                    className="h-14 rounded-xl pl-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-medium shadow-sm"
+                                    className="h-14 rounded-xl pl-12 pr-12 border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-medium shadow-sm"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    onMouseDown={() => setShowPassword(true)}
+                                    onMouseUp={() => setShowPassword(false)}
+                                    onMouseLeave={() => setShowPassword(false)}
+                                    onTouchStart={() => setShowPassword(true)}
+                                    onTouchEnd={() => setShowPassword(false)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-primary transition-colors cursor-pointer select-none outline-none"
+                                    title="Mantén presionado para ver"
+                                >
+                                    {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                                </button>
                             </div>
                         </div>
 

@@ -13,23 +13,24 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { adminUpdatePassword, UserSystem } from '@/app/actions/users'
+import { adminUpdatePassword, updatePassword, UserSystem } from '@/app/actions/users'
 import { Loader2, Eye, EyeOff, Lock } from 'lucide-react'
 
 interface PasswordDialogProps {
     user: UserSystem | null
     open: boolean
     onOpenChange: (open: boolean) => void
+    isSelf?: boolean
 }
 
-export default function PasswordDialog({ user, open, onOpenChange }: PasswordDialogProps) {
+export default function PasswordDialog({ user, open, onOpenChange, isSelf = false }: PasswordDialogProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!user) return
+        if (!user && !isSelf) return
 
         if (password.length < 6) {
             toast.error("La contraseña debe tener al menos 6 caracteres")
@@ -39,11 +40,14 @@ export default function PasswordDialog({ user, open, onOpenChange }: PasswordDia
         setIsLoading(true)
 
         try {
-            const result = await adminUpdatePassword(user.id, password)
+            const result = isSelf
+                ? await updatePassword(password)
+                : await adminUpdatePassword(user!.id, password)
+
             if (result.error) {
                 toast.error(result.error)
             } else {
-                toast.success(`Contraseña actualizada para ${user.nombre}`)
+                toast.success(isSelf ? "Tu contraseña ha sido actualizada" : `Contraseña actualizada para ${user?.nombre}`)
                 setPassword('')
                 onOpenChange(false)
             }

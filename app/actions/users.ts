@@ -177,3 +177,60 @@ export async function resetPassword(email: string) {
     if (error) return { error: error.message }
     return { success: true, message: "Enlace de restablecimiento enviado al correo." }
 }
+
+export async function updateProfileName(newName: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: "No autenticado" }
+
+    const { error: authError } = await supabase.auth.updateUser({
+        data: { full_name: newName }
+    })
+    if (authError) return { error: authError.message }
+
+    const { error: profileError } = await supabase
+        .from('usuarios_sistema')
+        .update({ nombre: newName })
+        .eq('id', user.id)
+
+    if (profileError) return { error: profileError.message }
+
+    revalidatePath('/configuracion')
+    return { success: true }
+}
+
+export async function logActivity(action: string, details: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    // We use a try-catch because the table might not exist yet
+    try {
+        await supabase.from('bitacora_sistema').insert({
+            usuario_id: user.id,
+            accion: action,
+            detalles: details
+        })
+    } catch (e) {
+        console.error("Error logging activity - bitacora_sistema table might be missing", e)
+    }
+}
+
+export async function getActivityLogs() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+        .from('bitacora_sistema')
+        .select('*')
+        .eq('usuario_id', user.id)
+        .order('fecha', { ascending: false })
+        .limit(20)
+
+    if (error) {
+        console.error("Error fetching logs:", error)
+        return []
+    }
+    return data
+}

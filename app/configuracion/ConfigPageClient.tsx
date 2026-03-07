@@ -27,9 +27,12 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { getUsers, deleteUser, resetPassword, UserSystem, updatePassword } from '@/app/actions/users'
+import { getUsers, deleteUser, resetPassword, UserSystem, updatePassword, updateProfileName, getActivityLogs, logActivity } from '@/app/actions/users'
 import UserDialog from '@/components/dashboard/UserDialog'
 import PasswordDialog from '@/components/dashboard/PasswordDialog'
+import { Pencil, Check, X as CloseIcon, History, Clock } from 'lucide-react'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -59,10 +62,13 @@ export default function ConfigPageClient() {
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
+    const [passwordDialogIsSelf, setPasswordDialogIsSelf] = useState(false)
     const [userToReset, setUserToReset] = useState<UserSystem | null>(null)
-    const [myPassword, setMyPassword] = useState('')
-    const [isUpdatingMyPass, setIsUpdatingMyPass] = useState(false)
-    const [showMyPass, setShowMyPass] = useState(false)
+    const [isEditingName, setIsEditingName] = useState(false)
+    const [newName, setNewName] = useState('')
+    const [isSavingName, setIsSavingName] = useState(false)
+    const [activityLogs, setActivityLogs] = useState<any[]>([])
+    const [isLoadingLogs, setIsLoadingLogs] = useState(true)
     const supabase = createClient()
     const router = useRouter()
 
@@ -99,6 +105,35 @@ export default function ConfigPageClient() {
         const data = await getUsers()
         setUsers(data)
         setIsLoading(false)
+    }
+
+    const fetchLogs = useCallback(async () => {
+        setIsLoadingLogs(true)
+        const logs = await getActivityLogs()
+        setActivityLogs(logs)
+        setIsLoadingLogs(false)
+    }, [])
+
+    useEffect(() => {
+        if (isAdmin) fetchLogs()
+    }, [isAdmin, fetchLogs])
+
+    const handleUpdateName = async () => {
+        if (!newName.trim() || newName === currentUser?.user_metadata?.full_name) {
+            setIsEditingName(false)
+            return
+        }
+        setIsSavingName(true)
+        const res = await updateProfileName(newName)
+        if (res.success) {
+            toast.success("Nombre de perfil actualizado")
+            await logActivity("Cambio de Nombre", `El usuario actualizó su nombre a: ${newName}`)
+            router.refresh()
+            setIsEditingName(false)
+        } else {
+            toast.error(res.error || "Error al actualizar")
+        }
+        setIsSavingName(false)
     }
 
     const handleDelete = (user: UserSystem) => {
@@ -149,26 +184,6 @@ export default function ConfigPageClient() {
         })
     }
 
-    const handleUpdateMyPassword = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (myPassword.length < 6) {
-            toast.error("La contraseña debe tener al menos 6 caracteres")
-            return
-        }
-        setIsUpdatingMyPass(true)
-        try {
-            const result = await updatePassword(myPassword)
-            if (result.error) toast.error(result.error)
-            else {
-                toast.success("Tu contraseña ha sido actualizada")
-                setMyPassword('')
-                setShowMyPass(false)
-            }
-        } finally {
-            setIsUpdatingMyPass(false)
-        }
-    }
-
     const filteredUsers = users.filter(u =>
         u.nombre.toLowerCase().includes(search.toLowerCase())
     )
@@ -210,45 +225,104 @@ export default function ConfigPageClient() {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold">Mi Perfil</h3>
-                                    <p className="text-sm text-muted-foreground">Configuración personal.</p>
+                                    <p className="text-sm text-muted-foreground">Configuración personal y actividad.</p>
                                 </div>
                             </div>
 
                             <div className="space-y-6 flex-1">
-                                <div className="p-4 rounded-2xl bg-muted/30 border border-border">
-                                    <p className="text-xs font-black uppercase text-muted-foreground tracking-widest mb-1">Nombre</p>
-                                    <p className="font-bold">{currentUser?.user_metadata?.full_name || 'Usuario'}</p>
+                                <div className="p-5 rounded-[1.5rem] bg-muted/30 border border-border group relative">
+                                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1.5 flex items-center gap-2">
+                                        Nombre de Usuario
+                                        {!isEditingName && (
+                                            <button
+                                                onClick={() => { setIsEditingName(true); setNewName(currentUser?.user_metadata?.full_name || '') }}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded-md text-primary"
+                                            >
+                                                <Pencil className="h-3 w-3" />
+                                            </button>
+                                        )}
+                                    </p>
+
+                                    {isEditingName ? (
+                                        <div className="flex gap-2 items-center">
+                                            <Input
+                                                autoFocus
+                                                value={newName}
+                                                onChange={(e) => setNewName(e.target.value)}
+                                                className="h-10 rounded-xl bg-background border-primary/20"
+                                            />
+                                            <Button
+                                                size="icon"
+                                                disabled={isSavingName}
+                                                onClick={handleUpdateName}
+                                                className="h-9 w-9 shrink-0 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white"
+                                            >
+                                                {isSavingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                                            </Button>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => setIsEditingName(false)}
+                                                className="h-9 w-9 shrink-0 rounded-xl text-muted-foreground"
+                                            >
+                                                <CloseIcon className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <p className="font-bold text-lg">{currentUser?.user_metadata?.full_name || 'Usuario'}</p>
+                                    )}
                                 </div>
 
-                                <form onSubmit={handleUpdateMyPassword} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Cambiar mi Contraseña</Label>
-                                        <div className="relative">
-                                            <Input
-                                                type={showMyPass ? "text" : "password"}
-                                                placeholder="Nueva contraseña"
-                                                className="h-12 rounded-xl border-border bg-background focus-glow pr-10"
-                                                value={myPassword}
-                                                onChange={(e) => setMyPassword(e.target.value)}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowMyPass(!showMyPass)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                            >
-                                                {showMyPass ? <Lock className="h-4 w-4" /> : <Key className="h-4 w-4" />}
-                                            </button>
-                                        </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Actividad Reciente</p>
+                                        <History className="h-3 w-3 text-muted-foreground" />
                                     </div>
+
+                                    <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {isLoadingLogs ? (
+                                            <div className="py-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground/30" /></div>
+                                        ) : activityLogs.length === 0 ? (
+                                            <p className="text-[11px] text-muted-foreground text-center py-4 italic">No hay historial disponible.</p>
+                                        ) : (
+                                            activityLogs.map((log, lIdx) => (
+                                                <div key={log.id || lIdx} className="bg-background/50 border border-border/50 p-3 rounded-2xl space-y-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="text-[11px] font-bold text-primary leading-tight">{log.accion}</span>
+                                                        <span className="text-[9px] text-muted-foreground flex items-center gap-1 font-medium bg-muted/50 px-2 py-0.5 rounded-full shrink-0">
+                                                            <Clock className="h-2.5 w-2.5" />
+                                                            {log.fecha ? format(new Date(log.fecha), 'HH:mm', { locale: es }) : ''}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{log.detalles}</p>
+                                                    <p className="text-[9px] text-muted-foreground/60 font-medium">
+                                                        {log.fecha ? format(new Date(log.fecha), 'dd MMM yyyy', { locale: es }) : ''}
+                                                    </p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="pt-2">
                                     <Button
-                                        type="submit"
-                                        disabled={!myPassword || isUpdatingMyPass}
-                                        className="w-full rounded-xl h-11 font-bold gap-2"
+                                        onClick={() => {
+                                            setUserToReset({
+                                                id: currentUser.id,
+                                                nombre: currentUser.user_metadata?.full_name || 'Mi Cuenta',
+                                                rol: 'admin',
+                                                activo: true
+                                            } as UserSystem)
+                                            setPasswordDialogIsSelf(true)
+                                            setPasswordDialogOpen(true)
+                                        }}
+                                        variant="outline"
+                                        className="w-full rounded-2xl h-11 font-bold gap-3 border-2 hover:bg-primary hover:text-primary-foreground transition-all group"
                                     >
-                                        {isUpdatingMyPass ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                                        Actualizar mi Contraseña
+                                        <Lock className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                                        Cambiar mi Contraseña
                                     </Button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </Card>
@@ -321,7 +395,11 @@ export default function ConfigPageClient() {
                                                         size="icon"
                                                         className="h-10 w-10 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/10 text-amber-500"
                                                         title="Cambiar Contraseña Manualmente"
-                                                        onClick={() => { setUserToReset(user); setPasswordDialogOpen(true) }}
+                                                        onClick={() => {
+                                                            setUserToReset(user);
+                                                            setPasswordDialogIsSelf(false);
+                                                            setPasswordDialogOpen(true);
+                                                        }}
                                                     >
                                                         <Lock className="h-4 w-4" />
                                                     </Button>
@@ -381,6 +459,7 @@ export default function ConfigPageClient() {
                     open={passwordDialogOpen}
                     onOpenChange={setPasswordDialogOpen}
                     user={userToReset}
+                    isSelf={passwordDialogIsSelf}
                 />
 
                 <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/50 p-6 rounded-[2rem] flex gap-4">

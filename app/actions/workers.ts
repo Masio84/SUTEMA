@@ -5,10 +5,12 @@ import { redirect } from 'next/navigation'
 import { WorkerFormValues } from '@/lib/validations/worker'
 import * as workersService from '@/lib/services/workers'
 import * as adscripcionesService from '@/lib/services/adscripciones'
+import { logActivity } from './users'
 
 export async function createWorker(data: WorkerFormValues) {
     try {
         await workersService.createWorker(data)
+        await logActivity("Registro", `Creó un nuevo registro para: ${data.nombre} ${data.apellido_paterno}`)
         revalidatePath('/dashboard')
         revalidatePath('/consultas')
     } catch (error: any) {
@@ -20,6 +22,7 @@ export async function createWorker(data: WorkerFormValues) {
 export async function updateWorker(id: string, data: WorkerFormValues) {
     try {
         await workersService.updateWorker(id, data)
+        await logActivity("Edición", `Actualizó los datos de: ${data.nombre} ${data.apellido_paterno}`)
         revalidatePath('/dashboard')
         revalidatePath(`/editar/${id}`)
         revalidatePath('/consultas')
@@ -53,6 +56,7 @@ export async function getUnidades(adscripcionId: string) {
 export async function deleteWorker(id: string) {
     try {
         await workersService.deleteWorker(id)
+        await logActivity("Eliminación", `Eliminó el registro con ID: ${id}`)
         revalidatePath('/consultas')
         revalidatePath('/dashboard')
         return { success: true }
