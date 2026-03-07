@@ -490,7 +490,7 @@ export default function ConfigPageClient() {
                             <div>
                                 <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Nuevas Adscripciones</p>
                                 <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/60 mt-0.5">
-                                    Agrega "Regulación Sanitaria", "Agua Clara" y "CERESO" al catálogo oficial si aún no existen.
+                                    Agrega "Regulación Sanitaria", "Agua Clara", "CERESO", "SEEM", "VIH" y "OTRO" al catálogo oficial si aún no existen.
                                 </p>
                             </div>
                             <Button
