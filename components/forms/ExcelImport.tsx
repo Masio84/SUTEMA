@@ -131,7 +131,8 @@ export default function ExcelImport() {
         "Distrito Sanitario 3",
         "Regulación Sanitaria",
         "Agua Clara",
-        "CERESO"
+        "CERESO",
+        "SEEM"
     ]
 
     const handleFile = async (file: File) => {

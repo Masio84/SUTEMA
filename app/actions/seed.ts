@@ -8,7 +8,8 @@ export async function seedNewAdscripciones() {
     const newAdscs = [
         { nombre: 'Regulación Sanitaria' },
         { nombre: 'Agua Clara' },
-        { nombre: 'CERESO' }
+        { nombre: 'CERESO' },
+        { nombre: 'SEEM' }
     ]
 
     const results = []
