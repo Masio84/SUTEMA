@@ -419,12 +419,15 @@ export default function ExcelImport() {
                                                     )}>
                                                         <SelectValue placeholder="Seleccionar..." />
                                                     </SelectTrigger>
-                                                    <SelectContent className="rounded-xl p-1 shadow-2xl border-primary/20">
-                                                        {PARENT_CATEGORIES.map(cat => (
-                                                            <SelectItem key={cat} value={cat} className="rounded-lg font-bold text-xs py-2 px-3 cursor-pointer">
-                                                                {cat}
-                                                            </SelectItem>
-                                                        ))}
+                                                    <SelectContent className="rounded-xl p-1 shadow-2xl border-primary/20 max-h-[350px]">
+                                                        {availableAdscripciones
+                                                            .map(a => a.nombre)
+                                                            .sort((a, b) => a.localeCompare(b))
+                                                            .map(cat => (
+                                                                <SelectItem key={cat} value={cat} className="rounded-lg font-bold text-xs py-2 px-3 cursor-pointer">
+                                                                    {cat}
+                                                                </SelectItem>
+                                                            ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -488,12 +491,15 @@ export default function ExcelImport() {
                                 <SelectTrigger className="h-14 rounded-2xl border-2 font-bold text-sm bg-card shadow-sm border-primary/10">
                                     <SelectValue placeholder="Toque para elegir..." />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-2xl p-2 shadow-2xl border-primary/20 max-h-[300px]">
-                                    {PARENT_CATEGORIES.map(cat => (
-                                        <SelectItem key={cat} value={cat} className="rounded-xl font-bold text-xs py-3 px-4 cursor-pointer">
-                                            {cat}
-                                        </SelectItem>
-                                    ))}
+                                <SelectContent className="rounded-2xl p-2 shadow-2xl border-primary/20 max-h-[400px]">
+                                    {availableAdscripciones
+                                        .map(a => a.nombre)
+                                        .sort((a, b) => a.localeCompare(b))
+                                        .map(cat => (
+                                            <SelectItem key={cat} value={cat} className="rounded-xl font-bold text-xs py-3 px-4 cursor-pointer">
+                                                {cat}
+                                            </SelectItem>
+                                        ))}
                                 </SelectContent>
                             </Select>
                         </div>
