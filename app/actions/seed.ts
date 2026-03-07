@@ -10,7 +10,8 @@ export async function seedNewAdscripciones() {
         { nombre: 'Agua Clara' },
         { nombre: 'CERESO' },
         { nombre: 'SEEM' },
-        { nombre: 'VIH' }
+        { nombre: 'VIH' },
+        { nombre: 'OTRO' }
     ]
 
     const results = []

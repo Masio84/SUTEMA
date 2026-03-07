@@ -140,7 +140,8 @@ export default function ExcelImport() {
         "Agua Clara",
         "CERESO",
         "SEEM",
-        "VIH"
+        "VIH",
+        "OTRO"
     ]
 
     const handleFile = async (file: File) => {
