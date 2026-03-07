@@ -420,14 +420,16 @@ export default function ExcelImport() {
                                                         <SelectValue placeholder="Seleccionar..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-xl p-1 shadow-2xl border-primary/20 max-h-[350px]">
-                                                        {availableAdscripciones
-                                                            .map(a => a.nombre)
-                                                            .sort((a, b) => a.localeCompare(b))
-                                                            .map(cat => (
+                                                        {(() => {
+                                                            const names = availableAdscripciones.map(a => a.nombre);
+                                                            const filtered = names.filter(n => n !== 'OTRO').sort((a, b) => a.localeCompare(b));
+                                                            const final = names.includes('OTRO') ? ['OTRO', ...filtered] : ['OTRO', ...filtered];
+                                                            return final.map(cat => (
                                                                 <SelectItem key={cat} value={cat} className="rounded-lg font-bold text-xs py-2 px-3 cursor-pointer">
                                                                     {cat}
                                                                 </SelectItem>
-                                                            ))}
+                                                            ));
+                                                        })()}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -492,14 +494,16 @@ export default function ExcelImport() {
                                     <SelectValue placeholder="Toque para elegir..." />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl p-2 shadow-2xl border-primary/20 max-h-[400px]">
-                                    {availableAdscripciones
-                                        .map(a => a.nombre)
-                                        .sort((a, b) => a.localeCompare(b))
-                                        .map(cat => (
+                                    {(() => {
+                                        const names = availableAdscripciones.map(a => a.nombre);
+                                        const filtered = names.filter(n => n !== 'OTRO').sort((a, b) => a.localeCompare(b));
+                                        const final = names.includes('OTRO') ? ['OTRO', ...filtered] : ['OTRO', ...filtered];
+                                        return final.map(cat => (
                                             <SelectItem key={cat} value={cat} className="rounded-xl font-bold text-xs py-3 px-4 cursor-pointer">
                                                 {cat}
                                             </SelectItem>
-                                        ))}
+                                        ));
+                                    })()}
                                 </SelectContent>
                             </Select>
                         </div>
