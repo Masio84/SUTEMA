@@ -3,6 +3,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+const getSiteURL = () => {
+    let url =
+        process.env.NEXT_PUBLIC_SITE_URL ?? // Set this to your site URL in production
+        process.env.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set on Vercel deployments
+        'http://localhost:3000/'
+    // Make sure to include `https://` when not localhost.
+    url = url.includes('http') ? url : `https://${url}`
+    // Make sure to include a trailing `/`.
+    url = url.charAt(url.length - 1) === '/' ? url : `${url}/`
+    return url
+}
+
 export type UserSystem = {
     id: string
     nombre: string
@@ -70,7 +82,7 @@ export async function createUser(data: {
 
         // Trigger invitation (password reset link)
         await supabase.auth.resetPasswordForEmail(data.email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+            redirectTo: `${getSiteURL()}reset-password`,
         })
     }
 
@@ -128,7 +140,7 @@ export async function deleteUser(id: string) {
 export async function resetPassword(email: string) {
     const supabase = await createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+        redirectTo: `${getSiteURL()}reset-password`,
     })
     if (error) return { error: error.message }
     return { success: true, message: "Enlace de restablecimiento enviado al correo." }
