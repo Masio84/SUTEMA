@@ -56,19 +56,19 @@ export default function ImportarPage() {
                     <div className="md:col-span-2 space-y-8">
                         <ExcelImport />
 
-                        <Card className="rounded-[2.5rem] border-none bg-indigo-50 dark:bg-indigo-950/20 shadow-sm overflow-hidden">
+                        <Card className="rounded-[2.5rem] border-none bg-primary/5 dark:bg-primary/5 shadow-sm overflow-hidden">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-lg font-bold flex items-center gap-2 text-indigo-900 dark:text-indigo-200">
+                                <CardTitle className="text-lg font-bold flex items-center gap-2 text-primary">
                                     <Info className="h-5 w-5" /> Formato Requerido
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <p className="text-sm text-indigo-800 dark:text-indigo-400 font-medium">
+                                <p className="text-sm text-foreground/80 font-medium">
                                     El archivo debe ser un libro de Excel (.xlsx) y la primera fila debe contener los encabezados exactos:
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                     {["NOMBRE", "PRIMER APELLIDO", "SEGUNDO APELLIDO", "CURP", "CLAVE DE ELECTOR", "SEXO", "ESTADO CIVIL", "TELEFONO", "FECHA DE NACIMIENTO", "CALLE", "NUM EXT", "NUM INT", "COLONIA", "MUNICIPIO", "SECCION", "AREA", "DEPENDENCIA", "TIENE HIJOS", "CANTIDAD DE HIJOS", "ESTATUS"].map(col => (
-                                        <span key={col} className="bg-white/50 dark:bg-black/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400">
+                                        <span key={col} className="bg-background/80 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-border text-foreground/70">
                                             {col}
                                         </span>
                                     ))}
@@ -78,7 +78,7 @@ export default function ImportarPage() {
                     </div>
 
                     <div className="space-y-6">
-                        <Card className="rounded-[2.5rem] border border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black/40 shadow-sm">
+                        <Card className="rounded-[2.5rem] border border-border bg-card shadow-sm">
                             <CardHeader>
                                 <CardTitle className="text-base font-bold flex items-center gap-2">
                                     <ShieldCheck className="h-5 w-5 text-emerald-500" /> Notas de Seguridad
@@ -95,14 +95,14 @@ export default function ImportarPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="rounded-[2.5rem] border border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black/40 shadow-sm">
+                        <Card className="rounded-[2.5rem] border border-border bg-card shadow-sm">
                             <CardHeader>
                                 <CardTitle className="text-base font-bold flex items-center gap-2">
                                     <FileSpreadsheet className="h-5 w-5 text-primary" /> Ejemplo
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 font-mono text-[10px] space-y-1">
+                                <div className="p-3 bg-muted rounded-2xl border border-border font-mono text-[10px] space-y-1">
                                     <p className="text-zinc-400 underline italic">Fila 1 (Encabezados):</p>
                                     <p className="text-foreground font-bold">NOMBRE, CURP, AREA, CANTIDAD DE HIJOS...</p>
                                     <p className="border-t border-zinc-200 dark:border-zinc-800 pt-1 mt-1 text-zinc-400 underline italic">Fila 2 (Datos):</p>

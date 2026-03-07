@@ -69,6 +69,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     /* Professional SaaS Palette (Slate based) */
     --background: 210 40% 98%;
     /* #f8fafc */
@@ -105,7 +106,10 @@
     --radius: 0.75rem;
   }
 
+  /* Force specificity for dark mode variables */
+  html.dark,
   .dark {
+    color-scheme: dark;
     --background: 222 47% 4%;
     /* Deep Navy */
     --foreground: 210 40% 98%;

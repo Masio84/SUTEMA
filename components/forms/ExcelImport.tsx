@@ -25,6 +25,14 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Badge } from '@/components/ui/badge'
 
 // ─────────────────────────────────────────────
 // Local autocorrect helpers (mirrors server-side)
@@ -120,7 +128,10 @@ export default function ExcelImport() {
         "Oficinas Centrales",
         "Distrito Sanitario 1",
         "Distrito Sanitario 2",
-        "Distrito Sanitario 3"
+        "Distrito Sanitario 3",
+        "Regulación Sanitaria",
+        "Agua Clara",
+        "CERESO"
     ]
 
     const handleFile = async (file: File) => {
@@ -284,78 +295,103 @@ export default function ExcelImport() {
 
     // ── Mapping View ──────────────────────────────────────────────
     if (isMappingMode && unmappedAreas.length > 0) {
+        // Collect records that need mapping
+        const recordsNeedingMapping = (rawData || []).map((row, idx) => ({
+            index: idx,
+            nombre: `${get(row, 'NOMBRE')} ${get(row, 'PRIMER APELLIDO', 'APELLIDO PATERNO')} ${get(row, 'SEGUNDO APELLIDO', 'APELLIDO MATERNO')}`,
+            rawArea: get(row, 'AREA', 'DEPENDENCIA')
+        })).filter(r => unmappedAreas.includes(r.rawArea))
+
         return (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 p-8 rounded-[2.5rem]">
-                    <div className="flex flex-col md:flex-row gap-6 items-start">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                            <AlertCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-[2.5rem] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                        <AlertCircle className="h-24 w-24 text-amber-500" />
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-6 items-center relative z-10">
+                        <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+                            <AlertCircle className="h-8 w-8" />
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black text-amber-900 dark:text-amber-100">
-                                Áreas no reconocidas
+                            <h3 className="text-xl font-black text-amber-600 dark:text-amber-400 italic">
+                                ¡Atención! Se requiere Mapeo de Áreas
                             </h3>
-                            <p className="text-amber-700 dark:text-amber-500 font-medium mt-2 max-w-2xl">
-                                Se encontraron adscripciones en el Excel que no existen en el sistema.
-                                Por favor, asígnalas a una de las categorías principales para poder continuar con la importación.
+                            <p className="text-amber-800/80 dark:text-amber-400/60 font-medium text-sm mt-1 max-w-2xl">
+                                Hemos detectado <span className="font-bold underline text-amber-600 dark:text-amber-400">{unmappedAreas.length}</span> áreas en el Excel que no coinciden con nuestro catálogo oficial.
+                                Por favor, asocia cada registro a la categoría correspondiente para proceder.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {unmappedAreas.map(area => (
-                        <Card key={area} className="rounded-[2rem] border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow overflow-hidden bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
-                            <CardContent className="p-6">
-                                <div className="mb-6">
-                                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-1">
-                                        Detectado en Excel
-                                    </p>
-                                    <p className="font-bold text-lg text-foreground break-words line-clamp-2" title={area}>
-                                        {area}
-                                    </p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em]">
-                                        Mapear a:
-                                    </p>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {PARENT_CATEGORIES.map(cat => (
-                                            <button
-                                                key={cat}
-                                                onClick={() => {
-                                                    setAreaMappings(prev => ({ ...prev, [area]: cat }))
+                <Card className="rounded-[2.5rem] border-border shadow-xl overflow-hidden bg-card/50 backdrop-blur-xl">
+                    <div className="max-h-[450px] overflow-auto">
+                        <Table className="table-fixed w-full">
+                            <TableHeader className="bg-muted/50 sticky top-0 z-20">
+                                <TableRow className="border-b border-border">
+                                    <TableHead className="w-10 px-3 py-2.5 font-black uppercase tracking-widest text-[9px] text-muted-foreground">#</TableHead>
+                                    <TableHead className="w-[35%] font-black uppercase tracking-widest text-[9px] px-3">Nombre Completo</TableHead>
+                                    <TableHead className="w-[30%] font-black uppercase tracking-widest text-[9px] px-3">Adscripción en Excel</TableHead>
+                                    <TableHead className="w-[180px] font-black uppercase tracking-widest text-[9px] px-3 text-primary">Categoría Oficial</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {recordsNeedingMapping.map((r, i) => (
+                                    <TableRow key={i} className="group hover:bg-primary/5 transition-colors border-border">
+                                        <TableCell className="px-3 py-1.5 font-mono text-[9px] text-muted-foreground font-bold">{i + 1}</TableCell>
+                                        <TableCell className="px-3 py-1.5 font-bold text-xs text-foreground uppercase truncate" title={r.nombre}>{r.nombre}</TableCell>
+                                        <TableCell className="px-3 py-1.5 truncate">
+                                            <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-[10px] px-2 py-0 font-medium truncate max-w-full" title={r.rawArea}>
+                                                {r.rawArea}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="px-3 py-1.5">
+                                            <Select
+                                                value={areaMappings[r.rawArea] || ''}
+                                                onValueChange={(v) => {
+                                                    setAreaMappings(prev => ({ ...prev, [r.rawArea]: v }))
                                                 }}
-                                                className={cn(
-                                                    "w-full text-left px-4 py-3 rounded-2xl text-sm font-bold transition-all border outline-none",
-                                                    areaMappings[area] === cat
-                                                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 ring-2 ring-primary ring-offset-2 dark:ring-offset-zinc-950"
-                                                        : "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-primary/50 text-zinc-600 dark:text-zinc-400"
-                                                )}
                                             >
-                                                {cat}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                                <SelectTrigger className={cn(
+                                                    "h-8 w-full rounded-lg font-bold transition-all border text-xs",
+                                                    areaMappings[r.rawArea]
+                                                        ? "border-primary bg-primary/10 text-primary shadow-sm"
+                                                        : "border-border bg-background text-muted-foreground"
+                                                )}>
+                                                    <SelectValue placeholder="Asignar..." />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl p-1 shadow-2xl border-primary/20">
+                                                    {PARENT_CATEGORIES.map(cat => (
+                                                        <SelectItem key={cat} value={cat} className="rounded-lg font-bold text-xs py-2 px-3 cursor-pointer">
+                                                            {cat}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </Card>
 
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
-                    <p className="text-sm font-bold text-muted-foreground">
-                        {Object.keys(areaMappings).length} de {unmappedAreas.length} áreas mapeadas
-                    </p>
-                    <div className="flex gap-3 w-full md:w-auto">
-                        <Button variant="outline" onClick={handleDiscard} className="flex-1 md:flex-none rounded-xl h-12 px-8 font-bold">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-muted/30 p-6 rounded-[2.5rem] border border-border">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 text-primary p-2 rounded-lg">
+                            <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        <p className="text-sm font-black text-foreground">
+                            {Object.keys(areaMappings).length} de {unmappedAreas.length} áreas únicas mapeadas
+                        </p>
+                    </div>
+                    <div className="flex gap-4 w-full md:w-auto">
+                        <Button variant="outline" onClick={handleDiscard} className="flex-1 md:flex-none rounded-xl h-12 px-8 font-bold border-2 hover:bg-muted/50">
                             Cancelar
                         </Button>
                         <Button
                             disabled={Object.keys(areaMappings).length < unmappedAreas.length}
                             onClick={() => {
-                                // Apply mappings to preview data
                                 if (previewData) {
                                     const updated = previewData.map(row => {
                                         const rawArea = row['_area']
@@ -368,9 +404,9 @@ export default function ExcelImport() {
                                 }
                                 setIsMappingMode(false)
                             }}
-                            className="flex-1 md:flex-none rounded-xl h-12 px-10 font-bold gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                            className="flex-1 md:flex-none rounded-xl h-12 px-12 font-black gap-2 shadow-xl shadow-primary/25 hover:scale-105 active:scale-95 transition-all text-sm uppercase tracking-wider"
                         >
-                            Continuar a Vista Previa
+                            Continuar a Validación
                         </Button>
                     </div>
                 </div>
@@ -428,16 +464,16 @@ export default function ExcelImport() {
                             </TableHeader>
                             <TableBody>
                                 {previewData.slice(0, 100).map((row, idx) => (
-                                    <TableRow key={idx} className="group border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/20">
-                                        <TableCell className="font-mono text-xs text-muted-foreground px-4 py-2 sticky left-0 bg-white dark:bg-zinc-950 z-10">
+                                    <TableRow key={idx} className="group border-border/50 hover:bg-muted/30">
+                                        <TableCell className="font-mono text-[9px] text-muted-foreground px-3 py-1.5 sticky left-0 bg-background z-10">
                                             {idx + 1}
                                         </TableCell>
                                         {PREVIEW_COLS.map(col => (
-                                            <TableCell key={col.field} className="py-1 px-2">
+                                            <TableCell key={col.field} className="py-0 px-1 border-l border-border/30">
                                                 <Input
                                                     value={row[col.field] ?? ''}
                                                     onChange={(e) => updateCell(idx, col.field, e.target.value)}
-                                                    className="h-7 text-xs font-medium bg-transparent border-transparent hover:border-border focus:border-primary px-2"
+                                                    className="h-7 text-[10px] font-medium bg-transparent border-transparent hover:bg-background/50 focus:bg-background rounded-none border-none shadow-none px-2 focus:ring-0"
                                                     style={{ minWidth: col.minWidth }}
                                                 />
                                             </TableCell>
@@ -467,19 +503,19 @@ export default function ExcelImport() {
             onDrop={onDrop}
             className={cn(
                 "rounded-[2.5rem] border-dashed border-2 transition-all backdrop-blur-sm overflow-hidden",
-                isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/20",
-                progress === 'success' && "border-emerald-500/50 bg-emerald-50/50"
+                isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-border bg-card/30",
+                progress === 'success' && "border-emerald-500/50 bg-emerald-500/5"
             )}
         >
             <CardContent className="p-12">
                 <div className="flex flex-col items-center text-center space-y-6">
                     <div className={cn(
                         "w-20 h-20 rounded-[2rem] flex items-center justify-center transition-all duration-500",
-                        progress === 'idle' && "bg-zinc-100 dark:bg-zinc-900 text-zinc-400",
-                        progress === 'parsing' && "bg-blue-100 dark:bg-blue-900/20 text-blue-500 animate-pulse",
-                        progress === 'uploading' && "bg-amber-100 dark:bg-amber-900/20 text-amber-500 animate-pulse",
-                        progress === 'success' && "bg-emerald-100 dark:bg-emerald-900/20 text-emerald-500",
-                        progress === 'error' && "bg-red-100 dark:bg-red-900/20 text-red-500"
+                        progress === 'idle' && "bg-muted text-muted-foreground",
+                        progress === 'parsing' && "bg-blue-500/10 text-blue-500 animate-pulse",
+                        progress === 'uploading' && "bg-amber-500/10 text-amber-500 animate-pulse",
+                        progress === 'success' && "bg-emerald-500/10 text-emerald-500",
+                        progress === 'error' && "bg-red-500/10 text-red-500"
                     )}>
                         {progress === 'idle' && <FileSpreadsheet className="h-10 w-10" />}
                         {(progress === 'parsing' || progress === 'uploading') && <Loader2 className="h-10 w-10 animate-spin" />}
@@ -505,19 +541,19 @@ export default function ExcelImport() {
                     {summary && (
                         <div className="w-full space-y-4 pt-4">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-3xl">
-                                    <p className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Total</p>
+                                <div className="bg-muted p-4 rounded-3xl">
+                                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Total</p>
                                     <p className="text-xl font-bold">{summary.total}</p>
                                 </div>
-                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-3xl border border-emerald-100 dark:border-emerald-900/50">
+                                <div className="bg-emerald-500/5 p-4 rounded-3xl border border-emerald-500/20">
                                     <p className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Éxito</p>
                                     <p className="text-xl font-bold text-emerald-600">{summary.successful}</p>
                                 </div>
-                                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-3xl border border-amber-100 dark:border-amber-900/50">
+                                <div className="bg-amber-500/5 p-4 rounded-3xl border border-amber-500/20">
                                     <p className="text-[10px] font-black uppercase text-amber-600 tracking-wider">Duplicados</p>
                                     <p className="text-xl font-bold text-amber-600">{summary.duplicates}</p>
                                 </div>
-                                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-3xl border border-red-100 dark:border-red-900/50">
+                                <div className="bg-red-500/5 p-4 rounded-3xl border border-red-500/20">
                                     <p className="text-[10px] font-black uppercase text-red-600 tracking-wider">Inválidos</p>
                                     <p className="text-xl font-bold text-red-600">{summary.validationSkipped}</p>
                                 </div>
@@ -592,9 +628,9 @@ export default function ExcelImport() {
                         </Button>
 
                         {fileName && (
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted border border-border">
                                 <FileSpreadsheet className="h-4 w-4 text-primary" />
-                                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                                <span className="text-xs font-bold text-muted-foreground">
                                     Archivo seleccionado: <span className="text-foreground">{fileName}</span>
                                 </span>
                             </div>

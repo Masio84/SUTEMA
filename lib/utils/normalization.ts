@@ -68,6 +68,9 @@ export const getOfficialAdscripcionName = (rawInput: string): string | null => {
     if (normalized.includes('vih') || normalized.includes('capacits')) return 'VIH'
     if (normalized.includes('uneme')) return 'UNEME'
     if (normalized.includes('seem') || normalized.includes('emergencias medicas')) return 'SEEM'
+    if (normalized.includes('regulacion sanitaria')) return 'Regulación Sanitaria'
+    if (normalized.includes('agua clara')) return 'Agua Clara'
+    if (normalized.includes('cereso')) return 'CERESO'
 
     return null // Return null instead of verbatim for easier detection of "unidentified"
 }
