@@ -77,7 +77,7 @@ export default function ConfigPageClient() {
     }
 
     const handleDelete = async (user: UserSystem) => {
-        if (confirm(`¿Está seguro de eliminar a ${user.nombre_completo}?`)) {
+        if (confirm(`¿Está seguro de eliminar a ${user.nombre}?`)) {
             const result = await deleteUser(user.id)
             if (result.error) {
                 toast.error(result.error)
@@ -100,7 +100,7 @@ export default function ConfigPageClient() {
     }
 
     const filteredUsers = users.filter(u =>
-        u.nombre_completo.toLowerCase().includes(search.toLowerCase())
+        u.nombre.toLowerCase().includes(search.toLowerCase())
     )
 
     if (isAdmin === null) return (
@@ -175,8 +175,8 @@ export default function ConfigPageClient() {
                                         >
                                             <TableCell className="px-8 py-5">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-foreground">{user.nombre_completo}</span>
-                                                    <span className="text-xs text-muted-foreground">{user.email || '—'}</span>
+                                                    <span className="font-bold text-foreground">{user.nombre}</span>
+                                                    <span className="text-xs text-muted-foreground">{user.usuario || '—'}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -197,7 +197,7 @@ export default function ConfigPageClient() {
                                                     size="icon"
                                                     className="h-10 w-10 rounded-xl hover:bg-muted"
                                                     title="Restablecer Contraseña"
-                                                    onClick={() => user.email && handleReset(user.email)}
+                                                    onClick={() => user.usuario && handleReset(user.usuario)}
                                                 >
                                                     <Lock className="h-4 w-4 text-muted-foreground" />
                                                 </Button>

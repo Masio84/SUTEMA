@@ -36,6 +36,8 @@ export interface Worker {
     unidades?: { nombre: string }
     estatus: string
     fecha_ingreso: string
+    municipio?: string
+    hijos_menores_12?: number
 }
 
 interface WorkerTableProps {
@@ -115,7 +117,9 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                         <TableRow className="hover:bg-transparent border-border">
                             <Header label="Nombre Completo" col="nombre" />
                             <Header label="CURP" col="curp" />
+                            <Header label="Municipio" col="municipio" />
                             <Header label="Adscripción" col="adscripcion_id" />
+                            <Header label="Hijos < 12" col="hijos_menores_12" />
                             <Header label="Antigüedad" col="fecha_ingreso" />
                             <Header label="Estatus" col="estatus" />
                             <TableHead className="w-[100px] text-right font-black uppercase tracking-widest text-[10px] text-muted-foreground pr-6">Acciones</TableHead>
@@ -151,11 +155,21 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                         </div>
                                     </TableCell>
                                     <TableCell className="font-mono text-xs uppercase tracking-wider">{highlightText(worker.curp)}</TableCell>
+                                    <TableCell className="text-sm font-medium">{highlightText(worker.municipio)}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium">{highlightText(worker.adscripciones?.nombre || worker.adscripcion_id)}</span>
                                             {worker.unidades?.nombre && <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tight">{highlightText(worker.unidades.nombre)}</span>}
                                         </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {(worker.hijos_menores_12 || 0) > 0 ? (
+                                            <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100 font-bold">
+                                                {worker.hijos_menores_12}
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-muted-foreground opacity-30">—</span>
+                                        )}
                                     </TableCell>
                                     <TableCell>
                                         <span className="text-sm font-black">{getSeniority(worker.fecha_ingreso)} <span className="text-[10px] text-muted-foreground uppercase ml-1">AÑOS</span></span>

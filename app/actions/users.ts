@@ -5,10 +5,10 @@ import { revalidatePath } from 'next/cache'
 
 export type UserSystem = {
     id: string
-    nombre_completo: string
+    nombre: string
     rol: 'admin' | 'capturista'
     activo: boolean
-    email?: string
+    usuario?: string
 }
 
 export async function getUsers() {
@@ -18,16 +18,14 @@ export async function getUsers() {
     const { data: profiles, error: profileError } = await supabase
         .from('usuarios_sistema')
         .select('*')
-        .order('fecha_creacion', { ascending: false })
+        .order('created_at', { ascending: false })
 
     if (profileError) {
         console.error(profileError)
         return []
     }
 
-    // We can't fetch auth emails easily without service role
-    // So we show the profiles. If we had service role, we could join with auth.users
-    return profiles as UserSystem[]
+    return profiles as any[] as UserSystem[]
 }
 
 export async function createUser(data: {
@@ -62,16 +60,30 @@ export async function createUser(data: {
             .from('usuarios_sistema')
             .insert({
                 id: authData.user.id,
-                nombre_completo: data.nombre_completo,
-                email: data.email,
+                nombre: data.nombre_completo,
+                usuario: data.email,
                 rol: data.rol,
                 activo: true
             })
 
         if (profileError) return { error: profileError.message }
+
+        // Trigger invitation (password reset link)
+        await supabase.auth.resetPasswordForEmail(data.email, {
+            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+        })
     }
 
     revalidatePath('/configuracion')
+    return { success: true }
+}
+
+export async function updatePassword(password: string) {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.updateUser({
+        password: password
+    })
+    if (error) return { error: error.message }
     return { success: true }
 }
 
@@ -85,7 +97,7 @@ export async function updateUser(id: string, data: {
     const { error } = await supabase
         .from('usuarios_sistema')
         .update({
-            nombre_completo: data.nombre_completo,
+            nombre: data.nombre_completo,
             rol: data.rol,
             activo: data.activo
         })

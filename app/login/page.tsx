@@ -131,7 +131,18 @@ export default function LoginPage() {
                                 <button
                                     type="button"
                                     className="text-[10px] font-bold text-primary hover:text-primary-800 transition-colors uppercase tracking-wider"
-                                    onClick={() => toast.info("Comuníquese con el administrador del sistema para restablecer su contraseña.")}
+                                    onClick={async () => {
+                                        const emailReset = prompt("Ingrese su correo institucional para recibir el enlace de recuperación:")
+                                        if (emailReset) {
+                                            const { resetPassword } = await import('@/app/actions/users')
+                                            const result = await resetPassword(emailReset)
+                                            if (result.success) {
+                                                toast.success("Enlace enviado. Revise su bandeja de entrada.")
+                                            } else {
+                                                toast.error(result.error || "Ocurrió un error")
+                                            }
+                                        }
+                                    }}
                                 >
                                     ¿Olvidó su contraseña?
                                 </button>

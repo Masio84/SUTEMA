@@ -34,7 +34,7 @@ interface UserDialogProps {
 export default function UserDialog({ user, open, onOpenChange, onSuccess }: UserDialogProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [formData, setFormData] = useState({
-        nombre_completo: '',
+        nombre: '',
         email: '',
         rol: 'capturista' as 'admin' | 'capturista',
         activo: true
@@ -43,14 +43,14 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
     useEffect(() => {
         if (user) {
             setFormData({
-                nombre_completo: user.nombre_completo || '',
-                email: user.email || '',
+                nombre: user.nombre || '',
+                email: user.usuario || '',
                 rol: user.rol,
                 activo: user.activo
             })
         } else {
             setFormData({
-                nombre_completo: '',
+                nombre: '',
                 email: '',
                 rol: 'capturista',
                 activo: true
@@ -66,14 +66,14 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
             let result
             if (user) {
                 result = await updateUser(user.id, {
-                    nombre_completo: formData.nombre_completo,
+                    nombre_completo: formData.nombre,
                     rol: formData.rol,
                     activo: formData.activo
                 })
             } else {
                 result = await createUser({
                     email: formData.email,
-                    nombre_completo: formData.nombre_completo,
+                    nombre_completo: formData.nombre,
                     rol: formData.rol
                 })
             }
@@ -109,8 +109,8 @@ export default function UserDialog({ user, open, onOpenChange, onSuccess }: User
                             required
                             placeholder="Juan Pérez"
                             className="h-12 rounded-xl border-border bg-background focus-glow"
-                            value={formData.nombre_completo}
-                            onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}
+                            value={formData.nombre}
+                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                         />
                     </div>
 

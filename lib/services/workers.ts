@@ -5,6 +5,7 @@ export type WorkerFilters = {
     search?: string;
     adscripcion?: string;
     estatus?: string;
+    municipio?: string;
     hijos_menores_12?: boolean;
     seniority_min?: number;
     seniority_max?: number;
@@ -42,6 +43,10 @@ export async function getWorkersOverview(params: WorkerFilters = {}) {
 
     if (estatus && estatus !== 'all') {
         query = query.eq('estatus', estatus)
+    }
+
+    if (params.municipio && params.municipio !== 'all') {
+        query = query.eq('municipio', params.municipio)
     }
 
     if (hijos_menores_12) {
