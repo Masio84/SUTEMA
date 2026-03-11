@@ -126,12 +126,12 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
             <div id="workers-print-area" className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
                 <Table>
                     <TableHeader className="bg-primary/5 dark:bg-primary-900/20 border-b border-border">
-                        <TableRow className="hover:bg-transparent border-border">
+                        <TableRow className="hover:bg-transparent border-border italic">
                             <Header label="Nombre Completo" col="nombre" />
-                            <Header label="CURP" col="curp" />
-                            <Header label="Municipio" col="municipio" />
+                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 hidden md:table-cell">CURP</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 hidden lg:table-cell">Municipio</TableHead>
                             <Header label="Adscripción" col="adscripcion_id" />
-                            <Header label="Hijos" col="hijos_menores_12" />
+                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 hidden sm:table-cell text-center">Hijos</TableHead>
                             <Header label="Antigüedad" col="fecha_ingreso" />
                             <Header label="Estatus" col="estatus" />
                             <TableHead className="w-[80px] text-right font-black uppercase tracking-widest text-[9px] text-muted-foreground pr-4">Acciones</TableHead>
@@ -155,7 +155,7 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
-                                    className={`group border-border transition-colors hover:bg-muted/30 ${onRowClick ? 'cursor-pointer' : ''}`}
+                                    className={`group border-border transition-colors hover:bg-primary/5 dark:hover:bg-primary/10 ${onRowClick ? 'cursor-pointer' : ''}`}
                                     onClick={() => onRowClick?.(worker)}
                                 >
                                     <TableCell className="py-2.5 px-4">
@@ -166,15 +166,15 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                             <span className="text-[10px] text-muted-foreground font-medium">{highlightText(worker.apellido_materno) || ''}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-mono text-[10px] uppercase tracking-wider px-4">{highlightText(worker.curp)}</TableCell>
-                                    <TableCell className="text-xs font-medium px-4">{highlightText(worker.municipio)}</TableCell>
+                                    <TableCell className="font-mono text-[10px] uppercase tracking-wider px-4 hidden md:table-cell">{highlightText(worker.curp)}</TableCell>
+                                    <TableCell className="text-xs font-medium px-4 hidden lg:table-cell">{highlightText(worker.municipio)}</TableCell>
                                     <TableCell className="px-4">
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-bold">{highlightText(worker.adscripciones?.nombre || worker.adscripcion_id)}</span>
-                                            {worker.unidades?.nombre && <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter">{highlightText(worker.unidades.nombre)}</span>}
+                                            <span className="text-xs font-bold whitespace-nowrap">{highlightText(worker.adscripciones?.nombre || worker.adscripcion_id)}</span>
+                                            {worker.unidades?.nombre && <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate max-w-[150px]">{highlightText(worker.unidades.nombre)}</span>}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4">
+                                    <TableCell className="px-4 hidden sm:table-cell text-center">
                                         {(worker.hijos_menores_12 || 0) > 0 ? (
                                             <Badge variant="secondary" className="bg-purple-100/50 text-purple-700 border-transparent font-black px-1.5 py-0 h-4 text-[9px]">
                                                 {worker.hijos_menores_12}
@@ -185,18 +185,10 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                     </TableCell>
                                     <TableCell className="px-4">
                                         <div className="flex flex-col leading-tight">
-                                            <span className="text-xs font-black">
+                                            <span className="text-xs font-black whitespace-nowrap">
                                                 {getSeniority(worker.fecha_ingreso).years}
                                                 <span className="text-[9px] text-muted-foreground uppercase ml-0.5 tracking-tighter">A</span>
                                             </span>
-                                            <div className="flex gap-1">
-                                                <span className="text-[9px] font-bold text-muted-foreground">
-                                                    {getSeniority(worker.fecha_ingreso).months}m
-                                                </span>
-                                                <span className="text-[9px] font-bold text-muted-foreground">
-                                                    {getSeniority(worker.fecha_ingreso).days}d
-                                                </span>
-                                            </div>
                                         </div>
                                     </TableCell>
                                     <TableCell className="px-4">{getEstatusBadge(worker.estatus)}</TableCell>
