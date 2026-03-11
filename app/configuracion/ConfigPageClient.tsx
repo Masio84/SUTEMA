@@ -462,13 +462,13 @@ export default function ConfigPageClient() {
                     isSelf={passwordDialogIsSelf}
                 />
 
-                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/50 p-5 rounded-2xl flex gap-4">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold shrink-0">
+                <div className="bg-amber-100/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 p-5 rounded-2xl flex gap-4 mt-4">
+                    <div className="w-8 h-8 rounded-lg bg-amber-200 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
                         <Lock className="h-4 w-4" />
                     </div>
                     <div>
-                        <p className="font-bold text-xs text-amber-900 dark:text-amber-200">Nota sobre el Cambio Manual</p>
-                        <p className="text-[11px] text-amber-800/70 dark:text-amber-400/70 mt-0.5">
+                        <p className="font-bold text-xs text-amber-950 dark:text-amber-200">Nota sobre el Cambio Manual</p>
+                        <p className="text-[11px] text-amber-900 dark:text-amber-400/70 mt-0.5 font-medium">
                             El cambio manual de contraseña es instantáneo y no requiere confirmación por correo.
                         </p>
                     </div>
