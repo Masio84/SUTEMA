@@ -25,19 +25,11 @@ const navItems = [
 export default function AppLayout({ children, title, subtitle }: { children: React.ReactNode, title: string, subtitle?: string }) {
     const [isMounted, setIsMounted] = React.useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [isCollapsed, setIsCollapsed] = useState(false)
+    const [isCollapsed, setIsCollapsed] = useState(true)
     const pathname = usePathname()
 
     React.useEffect(() => {
         setIsMounted(true)
-        // Auto-collapse on smaller desktop screens
-        const handleResize = () => {
-            if (window.innerWidth < 1200) setIsCollapsed(true)
-            else setIsCollapsed(false)
-        }
-        handleResize()
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
     }, [])
 
     const NavLinks = ({ collapsed = false }: { collapsed?: boolean }) => (
@@ -83,42 +75,44 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
                 className="bg-primary-950 hidden md:flex flex-col shadow-2xl z-40 relative border-r border-white/5 overflow-hidden"
             >
                 {/* Logo Area */}
-                <div className={`mt-8 mb-12 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isCollapsed ? 'px-2' : 'px-8 text-center'}`}>
-                    <div className="relative w-full flex justify-center h-12">
-                        <AnimatePresence mode="wait">
-                            {isCollapsed ? (
-                                <motion.div
-                                    key="collapsed-logo"
-                                    initial={{ opacity: 0, scale: 0.5 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.5 }}
-                                    className="bg-primary-500 p-2 rounded-xl shadow-lg ring-1 ring-white/20"
-                                >
-                                    <Briefcase className="w-6 h-6 text-white" />
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="expanded-logo"
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="w-full flex flex-col items-center"
-                                >
-                                    <Image
-                                        src="/logo-blanco.png"
-                                        alt="SUTEMA Logo"
-                                        width={160}
-                                        height={50}
-                                        className="object-contain drop-shadow-lg mb-4"
-                                        priority
-                                    />
-                                    <p className="text-[9px] text-primary-400 font-bold uppercase tracking-widest whitespace-nowrap">
-                                        Gestión Sindical
-                                    </p>
-                                </motion.div>
+                <div className={`mt-8 mb-12 flex flex-col items-center justify-center transition-all duration-500 ${isCollapsed ? 'px-2' : 'px-8'}`}>
+                    <motion.div 
+                        animate={{ 
+                            scale: isCollapsed ? 0.4 : 1,
+                            y: isCollapsed ? -5 : 0
+                        }}
+                        transition={{ duration: 0.4, ease: "circOut" }}
+                        className="relative flex flex-col items-center"
+                    >
+                        <div className="relative">
+                            <Image
+                                src="/logo-blanco.png"
+                                alt="SUTEMA Logo"
+                                width={160}
+                                height={50}
+                                className="object-contain drop-shadow-xl"
+                                priority
+                            />
+                            {isCollapsed && (
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="absolute -top-2 -right-2 w-4 h-4 bg-primary-500 rounded-full animate-pulse shadow-lg shadow-primary-500/50"
+                                />
                             )}
-                        </AnimatePresence>
-                    </div>
+                        </div>
+                        
+                        {!isCollapsed && (
+                            <motion.p 
+                                initial={{ opacity: 0, y: 5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                className="text-[9px] text-primary-400 font-bold uppercase tracking-[0.2em] mt-3 whitespace-nowrap"
+                            >
+                                Gestión Sindical
+                            </motion.p>
+                        )}
+                    </motion.div>
                 </div>
 
                 {/* Navigation */}
@@ -131,26 +125,33 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
                     </div>
                 </div>
 
-                {/* Sidebar Footer */}
-                <div className={`p-4 mt-auto border-t border-white/5 flex flex-col gap-2 ${isCollapsed ? 'items-center' : ''}`}>
+                <div className="p-4 mt-auto border-t border-white/5 flex flex-col gap-4 relative">
                     <Button
                         onClick={() => signOut()}
                         variant="ghost"
-                        className={`text-white/50 hover:bg-destructive/10 hover:text-destructive font-bold h-12 rounded-xl transition-all duration-300 ${isCollapsed ? 'p-0 w-12 justify-center' : 'w-full px-4 justify-start'}`}
+                        className={`text-white/50 hover:bg-destructive/10 hover:text-white font-bold h-12 rounded-2xl transition-all duration-300 ${isCollapsed ? 'p-0 w-12 mx-auto justify-center' : 'w-full px-4 justify-start'}`}
                         title={isCollapsed ? "Cerrar Sesión" : undefined}
                     >
                         <LogOut className={`h-5 w-5 ${isCollapsed ? '' : 'mr-3'}`} />
                         {!isCollapsed && <span>Cerrar Sesión</span>}
                     </Button>
 
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="self-center text-white/30 hover:text-white hover:bg-white/5 rounded-full h-8 w-8"
-                    >
-                        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                    </Button>
+                    <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-end pr-2'}`}>
+                        <button
+                            onClick={() => setIsCollapsed(!isCollapsed)}
+                            className="group relative flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-white/40 shadow-inner ring-1 ring-white/10 transition-all hover:bg-primary hover:text-white hover:ring-primary/20 active:scale-90"
+                        >
+                            <motion.div
+                                animate={{ rotate: isCollapsed ? 180 : 0 }}
+                                transition={{ duration: 0.5, ease: "backOut" }}
+                            >
+                                <ChevronLeft className="h-5 w-5" />
+                            </motion.div>
+                            
+                            {/* Hover glow effect */}
+                            <div className="absolute inset-0 rounded-2xl bg-primary opacity-0 blur-lg transition-opacity group-hover:opacity-20" />
+                        </button>
+                    </div>
                 </div>
             </motion.aside>
 
