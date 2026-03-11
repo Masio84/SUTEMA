@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, UserPlus, FileText, Settings, Search, LogOut, FileUp, Menu } from 'lucide-react'
+import { LayoutDashboard, UserPlus, FileText, Settings, Search, LogOut, FileUp, Menu, Briefcase } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -18,6 +18,7 @@ const navItems = [
     { label: 'Registro de Trabajador', href: '/registro', icon: <UserPlus className="h-4 w-4" /> },
     { label: 'Importar Excel', href: '/importar', icon: <FileUp className="h-4 w-4" /> },
     { label: 'Reportes', href: '/reportes', icon: <FileText className="h-4 w-4" /> },
+    { label: 'Comisiones', href: '/comisiones', icon: <Briefcase className="h-4 w-4" /> },
     { label: 'Configuración', href: '/configuracion', icon: <Settings className="h-4 w-4" /> },
 ]
 
