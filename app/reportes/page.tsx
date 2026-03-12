@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import WorkerTable, { Worker } from '@/components/tables/WorkerTable'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
 import {
     Dialog,
     DialogContent,
@@ -45,6 +46,8 @@ const ALL_WORKER_FIELDS = [
 ]
 
 export default function ReportesPage() {
+    const searchParams = useSearchParams()
+    
     const [workers, setWorkers] = useState<Worker[]>([])
     const [totalCount, setTotalCount] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
@@ -59,7 +62,8 @@ export default function ReportesPage() {
     const [selectedAdscripcion, setSelectedAdscripcion] = useState('all')
     const [selectedMunicipio, setSelectedMunicipio] = useState('all')
     const [selectedEstatus, setSelectedEstatus] = useState('all')
-    const [hasHijos, setHasHijos] = useState(false)
+    const [selectedSexo, setSelectedSexo] = useState(searchParams.get('sexo') || 'all')
+    const [hasHijos, setHasHijos] = useState(searchParams.get('tiene_hijos') === 'true' || searchParams.get('hijos_menores_12') === 'true')
     const [page, setPage] = useState(1)
     const [sortCol, setSortCol] = useState('nombre')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
@@ -72,6 +76,7 @@ export default function ReportesPage() {
                 adscripcion: selectedAdscripcion,
                 estatus: selectedEstatus,
                 municipio: selectedMunicipio,
+                sexo: selectedSexo,
                 hijos_menores_12: hasHijos,
                 page,
                 perPage: 15, // Slightly less for reports view
@@ -85,7 +90,7 @@ export default function ReportesPage() {
         } finally {
             setIsLoading(false)
         }
-    }, [search, selectedAdscripcion, selectedEstatus, selectedMunicipio, hasHijos, page, sortCol, sortOrder])
+    }, [search, selectedAdscripcion, selectedEstatus, selectedMunicipio, selectedSexo, hasHijos, page, sortCol, sortOrder])
 
     useEffect(() => {
         const timer = setTimeout(fetchContent, 300)
@@ -109,6 +114,7 @@ export default function ReportesPage() {
                 adscripcion: selectedAdscripcion,
                 estatus: selectedEstatus,
                 municipio: selectedMunicipio,
+                sexo: selectedSexo,
                 hijos_menores_12: hasHijos,
                 perPage: 10000,
                 sortCol,
@@ -152,6 +158,7 @@ export default function ReportesPage() {
         setSelectedAdscripcion('all')
         setSelectedMunicipio('all')
         setSelectedEstatus('all')
+        setSelectedSexo('all')
         setHasHijos(false)
         setPage(1)
     }
@@ -273,6 +280,20 @@ export default function ReportesPage() {
                                                     <SelectItem value="activo">Activo</SelectItem>
                                                     <SelectItem value="jubilado">Jubilado</SelectItem>
                                                     <SelectItem value="inactivo">Inactivo</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Género</Label>
+                                            <Select value={selectedSexo} onValueChange={(v) => { setSelectedSexo(v); setPage(1) }}>
+                                                <SelectTrigger className="h-12 rounded-xl border-zinc-200">
+                                                    <SelectValue placeholder="Todos" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl">
+                                                    <SelectItem value="all">Todos</SelectItem>
+                                                    <SelectItem value="Masculino">Masculino</SelectItem>
+                                                    <SelectItem value="Femenino">Femenino</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>

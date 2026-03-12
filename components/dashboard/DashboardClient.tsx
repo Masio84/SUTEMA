@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-    Users, UserCheck, Baby, BarChart2,
+    Users, Baby,
     PieChart as PieChartIcon, AlertTriangle, ArrowRight, CheckCircle2,
+    FileText,
+    Briefcase
 } from 'lucide-react'
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-    ResponsiveContainer, PieChart, Pie, Cell, Sector
+    PieChart, Pie, Cell, Sector, ResponsiveContainer, Tooltip as RechartsTooltip
 } from 'recharts'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -47,7 +48,10 @@ interface DashboardClientProps {
     stats: {
         total: number
         activos: number
+        jubilados: number
         conHijos: number
+        papas: number
+        mamas: number
         stats: {
             adscDistrib: { name: string; count: number }[]
             adscDetailed: AdscDetailed[]
@@ -113,22 +117,8 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
 
     const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }
     const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }
-
     const incompleteCount = incompleteData.workers.length
     const incompletePercent = stats.total > 0 ? Math.round((incompleteCount / stats.total) * 100) : 0
-
-    const metricCards = [
-        { title: "Total Registrados", value: stats.total ?? 0, icon: Users, color: "from-primary to-slate-950 dark:to-primary/50", iconBg: "bg-primary", glow: "bg-primary/10" },
-        { title: "Activos", value: stats.activos ?? 0, icon: UserCheck, color: "from-blue-600 to-blue-950 dark:to-blue-400", iconBg: "bg-blue-600", glow: "bg-blue-500/10" },
-        { title: "Con Hijos < 12", value: stats.conHijos ?? 0, icon: Baby, color: "from-indigo-600 to-indigo-950 dark:to-indigo-400", iconBg: "bg-indigo-600", glow: "bg-indigo-500/10" },
-        {
-            title: "Incompletos", value: incompleteCount ?? 0, icon: AlertTriangle,
-            color: (incompleteCount ?? 0) > 0 ? "from-red-600 to-red-950 dark:to-red-400" : "from-emerald-600 to-emerald-950 dark:to-emerald-400",
-            iconBg: (incompleteCount ?? 0) > 0 ? "bg-red-600" : "bg-emerald-600",
-            glow: (incompleteCount ?? 0) > 0 ? "bg-red-500/10" : "bg-emerald-500/10",
-            highlight: (incompleteCount ?? 0) > 0
-        },
-    ]
 
     const pieData = stats.stats.adscDetailed.filter(a => a.total > 0)
 
@@ -148,191 +138,90 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
     return (
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
 
-            {/* ── Summary Row (Replacing individual metric cards) ── */}
+            {/* ── Main Dashboard Panel (Top Row) ── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Labor Status Overview */}
-                <motion.div variants={item} className="lg:col-span-2">
-                    <Card className="glass-card overflow-hidden h-full">
-                        <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
-                            <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                <Users className="h-4 w-4 text-primary" /> Resumen de Población y Estatus
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-8 px-6 pb-8">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                                {/* Total registrations */}
-                                <div className="flex flex-col justify-center items-center p-6 bg-primary/5 rounded-[2rem] border border-primary/10">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Registrados</p>
-                                    <h4 className="text-5xl font-black text-foreground drop-shadow-sm">{stats.total}</h4>
-                                    <div className="mt-4 p-2 bg-primary rounded-xl">
-                                        <Users className="h-5 w-5 text-white" />
-                                    </div>
-                                </div>
-
-                                {/* Status Chart */}
-                                <div className="h-[180px] w-full flex flex-col items-center">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={[
-                                                    { name: 'Activos', value: stats.activos },
-                                                    { name: 'Jubilados', value: stats.jubilados }
-                                                ]}
-                                                innerRadius={50}
-                                                outerRadius={70}
-                                                paddingAngle={5}
-                                                dataKey="value"
-                                            >
-                                                <Cell fill={COLORS[0]} />
-                                                <Cell fill={COLORS[3]} />
-                                            </Pie>
-                                            <RechartsTooltip />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                    <div className="flex gap-4 mt-2">
-                                        <div className="flex items-center gap-1.5 text-[10px font-bold uppercase tracking-tight]">
-                                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[0] }} /> Activos ({stats.activos})
-                                        </div>
-                                        <div className="flex items-center gap-1.5 text-[10px font-bold uppercase tracking-tight]">
-                                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[3] }} /> Jubilados ({stats.jubilados})
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Other metrics list */}
-                                <div className="flex flex-col justify-center space-y-4">
-                                    <div className="p-4 rounded-2xl bg-muted/50 border border-border flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                                            <Baby className="h-5 w-5" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Con Hijos &lt; 12</p>
-                                            <p className="text-xl font-black">{stats.conHijos}</p>
-                                        </div>
-                                    </div>
-                                    <div className="p-4 rounded-2xl bg-muted/50 border border-border flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${incompleteCount > 0 ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                                            <AlertTriangle className="h-5 w-5" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Registros Incompletos</p>
-                                            <p className={`text-xl font-black ${incompleteCount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{incompleteCount}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                {/* System Activity / Fast access */}
+                {/* 1. Demographics Overview */}
                 <motion.div variants={item}>
                     <Card className="glass-card overflow-hidden h-full flex flex-col">
                         <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
                             <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-primary" /> Calidad de Datos
+                                <Users className="h-4 w-4 text-primary" /> Demografía Familiar
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-6 px-6 pb-6 flex-1 flex flex-col justify-center">
-                            <div className="text-center space-y-4">
-                                <div className="relative inline-block">
-                                    <svg className="h-32 w-32">
-                                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-muted" />
-                                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" 
-                                            strokeDasharray={364.4} strokeDashoffset={364.4 - (364.4 * (stats.total - incompleteCount) / stats.total)}
-                                            className={`${incompleteCount > 0 ? 'text-amber-500' : 'text-emerald-500'} transition-all duration-1000`} 
-                                            strokeLinecap="round" 
-                                        />
-                                    </svg>
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-2xl font-black">{Math.round(((stats.total - incompleteCount) / stats.total) * 100)}%</span>
-                                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Completitud</span>
+                        <CardContent className="pt-6 px-6 pb-6 flex-1 flex flex-col">
+                            <div className="space-y-6 flex-1 flex flex-col justify-around">
+                                {/* Waffle Grid Chart (Novel Visualization) */}
+                                <div className="space-y-4">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-center text-muted-foreground">Distribución Proporcional (Papás vs Mamás)</p>
+                                    <div className="flex flex-col items-center">
+                                        <div className="grid grid-cols-10 gap-1 mb-4 p-2 bg-muted/20 rounded-xl border border-border/50">
+                                            {Array.from({ length: 100 }).map((_, i) => {
+                                                const totalParents = stats.papas + stats.mamas
+                                                const papasRatio = totalParents > 0 ? (stats.papas / totalParents) : 0.5
+                                                const threshold = Math.round(papasRatio * 100)
+                                                const isPapa = i < threshold
+                                                return (
+                                                    <div 
+                                                        key={i} 
+                                                        className={`w-2 h-2 rounded-full transition-all duration-500 hover:scale-150 ${isPapa ? 'bg-[#3b82f6] shadow-[0_0_5px_#3b82f644]' : 'bg-[#ec4899] shadow-[0_0_5px_#ec489944]'}`}
+                                                        title={isPapa ? 'Representación Papás' : 'Representación Mamás'}
+                                                    />
+                                                )
+                                            })}
+                                        </div>
+                                        <div className="flex gap-4 justify-center">
+                                            <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tight">
+                                                <div className="w-2 h-2 rounded-full bg-[#3b82f6]" /> Papás ({stats.papas})
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tight">
+                                                <div className="w-2 h-2 rounded-full bg-[#ec4899]" /> Mamás ({stats.mamas})
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <p className="text-xs font-bold text-muted-foreground leading-relaxed">
-                                    {incompleteCount > 0 
-                                      ? `Existen ${incompleteCount} registros que requieren atención inmediata para completar el padrón.`
-                                      : '¡Excelente! Todos los registros del sistema están al 100% de completitud.'}
-                                </p>
-                                <Button 
-                                    variant="outline" 
-                                    className="w-full rounded-xl font-black uppercase text-[10px] tracking-widest mt-2"
-                                    onClick={() => router.push('/consultas')}
-                                >
-                                    Ver Detalles <ArrowRight className="h-3 w-3 ml-2" />
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </div>
 
-            {/* ── Charts row ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Bar chart – distribución */}
-                <motion.div variants={item}>
-                    <Card className="glass-card overflow-hidden">
-                        <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
-                            <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                <BarChart2 className="h-4 w-4 text-primary" /> Distribución por Adscripción
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6 px-5 pb-6">
-                            <div className="h-[350px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={stats.stats.adscDistrib} layout="vertical" margin={{ left: 40, right: 20 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" className="opacity-10" />
-                                        <XAxis type="number" hide />
-                                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={160} fontSize={11} fontWeight={600} />
-                                        <RechartsTooltip cursor={{ fill: 'transparent' }} content={({ active, payload }) => {
-                                            if (!active || !payload?.length) return null
-                                            const name = payload[0].payload.name
-                                            const detail = pieData.find(d => d.name === name)
-                                            if (!detail) return null
-                                            return (
-                                                <div className="glass-card p-4 shadow-xl space-y-1 min-w-[180px]">
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{detail.name}</p>
-                                                    <p className="text-xl font-black">{detail.total} <span className="text-[10px] text-muted-foreground uppercase">trabajadores</span></p>
-                                                    <div className="border-t border-border pt-2 space-y-1">
-                                                        <p className="text-xs flex justify-between"><span className="text-emerald-600 font-bold">✓ Activos</span><span className="font-black">{detail.activos}</span></p>
-                                                        <p className="text-xs flex justify-between"><span className="text-blue-500 font-bold">● Jubilados</span><span className="font-black">{detail.jubilados}</span></p>
-                                                        {detail.inactivos > 0 && <p className="text-xs flex justify-between"><span className="text-amber-500 font-bold">○ Inactivos</span><span className="font-black">{detail.inactivos}</span></p>}
-                                                        {detail.bajas > 0 && <p className="text-xs flex justify-between"><span className="text-red-500 font-bold">✕ Bajas</span><span className="font-black">{detail.bajas}</span></p>}
-                                                        <p className="text-xs flex justify-between"><span className="text-purple-500 font-bold">♥ Con hijos</span><span className="font-black">{detail.conHijos}</span></p>
-                                                        {detail.incompletos > 0 && <p className="text-xs flex justify-between"><span className="text-amber-600 font-bold">⚠ Incompletos</span><span className="font-black">{detail.incompletos}</span></p>}
-                                                    </div>
-                                                </div>
-                                            )
-                                        }} />
-                                        <Bar dataKey="count" fill="#0A4174" radius={[0, 10, 10, 0]} barSize={20}>
-                                            {stats.stats.adscDistrib.map((_, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                {/* Summary Vertical Stats */}
+                                <div className="grid grid-cols-1 gap-3">
+                                    <div className="flex items-center justify-between p-3.5 bg-primary/5 rounded-2xl border border-primary/10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-primary rounded-xl text-white">
+                                                <Users className="h-4 w-4" />
+                                            </div>
+                                            <span className="text-[11px] font-black uppercase tracking-tight text-muted-foreground">Total Padrón</span>
+                                        </div>
+                                        <span className="text-2xl font-black">{stats.total}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3.5 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-indigo-500 rounded-xl text-white">
+                                                <Baby className="h-4 w-4" />
+                                            </div>
+                                            <span className="text-[11px] font-black uppercase tracking-tight text-muted-foreground">Hijos &lt; 12</span>
+                                        </div>
+                                        <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{stats.conHijos}</span>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </motion.div>
 
-                {/* Pie chart – resumen por adscripcion with hover detail */}
+                {/* 2. Interactive Distribution by Adscripcion */}
                 <motion.div variants={item}>
-                    <Card className="glass-card overflow-hidden">
+                    <Card className="glass-card overflow-hidden h-full flex flex-col">
                         <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
                             <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                <PieChartIcon className="h-4 w-4 text-primary" /> Resumen por Área
+                                <PieChartIcon className="h-4 w-4 text-primary" /> Distribución por Área
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-4 px-5 pb-5">
+                        <CardContent className="pt-4 px-5 pb-5 flex-1 flex flex-col">
                             {pieData.length === 0 ? (
-                                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                <div className="flex items-center justify-center h-full text-muted-foreground">
                                     <p className="font-bold text-sm">Sin datos disponibles</p>
                                 </div>
                             ) : (
-                                <div className="flex flex-col gap-4">
-                                    {/* Pie */}
-                                    <div className="h-[240px] w-full">
+                                <div className="flex flex-col gap-4 h-full">
+                                    <div className="h-[180px] w-full shrink-0">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
@@ -341,7 +230,7 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
                                                         dataKey: 'total',
                                                         nameKey: 'name',
                                                         cx: '50%', cy: '50%',
-                                                        innerRadius: 65, outerRadius: 95,
+                                                        innerRadius: 50, outerRadius: 75,
                                                         paddingAngle: 3,
                                                         activeIndex: activeAdscIdx,
                                                         activeShape: renderActiveShape,
@@ -362,35 +251,38 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
                                         </ResponsiveContainer>
                                     </div>
 
-                                    {/* Detail panel for active adscripcion */}
+                                    {/* Detail panel */}
                                     {activeAdsc && (
-                                        <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+                                        <div className="rounded-2xl border border-border bg-muted/20 p-3 space-y-2 shrink-0">
                                             <div className="flex items-center gap-2">
                                                 <div
                                                     className="w-2.5 h-2.5 rounded-full shrink-0"
                                                     style={{ background: COLORS[activeAdscIdx % COLORS.length] }}
                                                 />
-                                                <p className="font-black text-xs truncate">{activeAdsc.name}</p>
-                                                <span className="ml-auto text-[10px] font-black text-muted-foreground">{activeAdsc.total} trabajadores</span>
+                                                <p className="font-black text-[10px] uppercase truncate flex-1">{activeAdsc.name}</p>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Pill label="Activos" value={activeAdsc.activos} color="bg-emerald-100/50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400" />
-                                                <Pill label="Jubilados" value={activeAdsc.jubilados} color="bg-blue-100/50 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400" />
-                                                <Pill label="Inactivos" value={activeAdsc.inactivos} color="bg-amber-100/50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400" />
-                                                <Pill label="Bajas" value={activeAdsc.bajas} color="bg-red-100/50 text-red-800 dark:bg-red-500/10 dark:text-red-400" />
+                                            <div className="grid grid-cols-2 gap-1.5">
+                                                <div className="flex items-center justify-between px-2 py-1 bg-background/50 rounded-lg">
+                                                    <span className="text-[9px] font-bold text-muted-foreground uppercase leading-none">Total</span>
+                                                    <span className="text-xs font-black">{activeAdsc.total}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between px-2 py-1 bg-emerald-500/10 rounded-lg">
+                                                    <span className="text-[9px] font-bold text-emerald-600 uppercase leading-none">Activos</span>
+                                                    <span className="text-xs font-black text-emerald-600">{activeAdsc.activos}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Legend dots */}
-                                    <div className="flex flex-wrap gap-2">
+                                    {/* Legend simplified */}
+                                    <div className="flex flex-wrap gap-1 mt-auto max-h-[100px] overflow-y-auto custom-scrollbar pr-1">
                                         {pieData.map((d, i) => (
                                             <button
                                                 key={d.name}
                                                 onClick={() => setActiveAdscIdx(i)}
-                                                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${activeAdscIdx === i ? 'bg-muted shadow-sm' : 'hover:bg-muted/50'}`}
+                                                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${activeAdscIdx === i ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
                                             >
-                                                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                                                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
                                                 <span className="truncate max-w-[80px]">{d.name}</span>
                                             </button>
                                         ))}
@@ -400,7 +292,75 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
                         </CardContent>
                     </Card>
                 </motion.div>
+
+                {/* 3. Quick Reports Section */}
+                <motion.div variants={item}>
+                    <Card className="glass-card overflow-hidden h-full flex flex-col">
+                        <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2 text-primary">
+                                <FileText className="h-4 w-4" /> Reportes Rápidos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 px-6 pb-6 flex-1">
+                            <div className="space-y-3">
+                                {[
+                                    { 
+                                        label: 'Papás Sindicalizados', 
+                                        icon: Users, 
+                                        color: 'text-blue-500', 
+                                        bg: 'bg-blue-500/10',
+                                        href: '/reportes?sexo=Masculino&tiene_hijos=true' 
+                                    },
+                                    { 
+                                        label: 'Mamás Sindicalizadas', 
+                                        icon: Users, 
+                                        color: 'text-pink-500', 
+                                        bg: 'bg-pink-500/10',
+                                        href: '/reportes?sexo=Femenino&tiene_hijos=true' 
+                                    },
+                                    { 
+                                        label: 'Hijos menores de 12 años', 
+                                        icon: Baby, 
+                                        color: 'text-indigo-500', 
+                                        bg: 'bg-indigo-500/10',
+                                        href: '/reportes?hijos_menores_12=true' 
+                                    },
+                                    { 
+                                        label: 'Reporte Completo por Unidad', 
+                                        icon: Briefcase, 
+                                        color: 'text-slate-600 dark:text-slate-400', 
+                                        bg: 'bg-slate-500/10',
+                                        href: '/reportes?sortCol=unidad_id' 
+                                    },
+                                ].map((row, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => router.push(row.href)}
+                                        className="w-full group flex items-center justify-between p-3.5 rounded-2xl border border-border/50 bg-muted/20 hover:bg-white dark:hover:bg-primary-900 transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-xl ${row.bg} ${row.color}`}>
+                                                <row.icon className="h-4 w-4" />
+                                            </div>
+                                            <span className="text-[11px] font-black uppercase tracking-tight text-foreground/80 group-hover:text-foreground">
+                                                {row.label}
+                                            </span>
+                                        </div>
+                                        <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-1" />
+                                    </button>
+                                ))}
+                            </div>
+                        </CardContent>
+                        <div className="p-4 bg-muted/30 border-t border-border mt-auto">
+                            <p className="text-[9px] font-bold text-muted-foreground text-center uppercase tracking-[0.2em]">
+                                Acceso Directo de Administración
+                            </p>
+                        </div>
+                    </Card>
+                </motion.div>
             </div>
+
+
 
             {/* ── Completeness Card ── */}
             <motion.div variants={item}>

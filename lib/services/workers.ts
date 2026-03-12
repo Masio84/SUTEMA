@@ -6,6 +6,7 @@ export type WorkerFilters = {
     adscripcion?: string;
     estatus?: string;
     municipio?: string;
+    sexo?: string;
     hijos_menores_12?: boolean;
     seniority_min?: number;
     seniority_max?: number;
@@ -20,6 +21,7 @@ export async function getWorkersOverview(params: WorkerFilters = {}) {
         search,
         adscripcion,
         estatus,
+        sexo,
         hijos_menores_12,
         seniority_min,
         seniority_max,
@@ -43,6 +45,10 @@ export async function getWorkersOverview(params: WorkerFilters = {}) {
 
     if (estatus && estatus !== 'all') {
         query = query.eq('estatus', estatus)
+    }
+
+    if (sexo && sexo !== 'all') {
+        query = query.eq('sexo', sexo)
     }
 
     if (params.municipio && params.municipio !== 'all') {
@@ -188,6 +194,9 @@ export async function getDashboardStats() {
         inactivos: number; bajas: number; conHijos: number; incompletos: number
     }> = {}
 
+    let papas = 0;
+    let mamas = 0;
+
     // Init buckets from the adscripciones list
     for (const a of (adscData || [])) {
         adscMap[a.id] = { name: a.nombre, total: 0, activos: 0, jubilados: 0, inactivos: 0, bajas: 0, conHijos: 0, incompletos: 0 }
@@ -203,7 +212,12 @@ export async function getDashboardStats() {
         if (w.estatus === 'jubilado') bucket.jubilados++
         if (w.estatus === 'inactivo') bucket.inactivos++
         if (w.estatus === 'baja') bucket.bajas++
-        if (w.tiene_hijos) bucket.conHijos++
+        
+        if (w.tiene_hijos) {
+            bucket.conHijos++
+            if (w.sexo === 'Masculino') papas++
+            if (w.sexo === 'Femenino') mamas++
+        }
 
         const isIncomplete = REQUIRED.some(f => !w[f] || w[f] === '')
         if (isIncomplete) bucket.incompletos++
@@ -217,6 +231,8 @@ export async function getDashboardStats() {
         activos: activosRes.count || 0,
         jubilados: jubiladosRes.count || 0,
         conHijos: conHijosRes.count || 0,
+        papas,
+        mamas,
         stats: { adscDistrib, adscDetailed }
     }
 }

@@ -78,8 +78,8 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
                 <div className={`mt-8 mb-12 flex flex-col items-center justify-center transition-all duration-500 ${isCollapsed ? 'px-2' : 'px-8'}`}>
                     <motion.div 
                         animate={{ 
-                            scale: isCollapsed ? 0.4 : 1,
-                            y: isCollapsed ? -5 : 0
+                            scale: isCollapsed ? 0.65 : 1,
+                            y: isCollapsed ? -2 : 0
                         }}
                         transition={{ duration: 0.4, ease: "circOut" }}
                         className="relative flex flex-col items-center"
