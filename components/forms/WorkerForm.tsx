@@ -80,7 +80,7 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
             fecha_ingreso: new Date(),
             estatus: "activo",
             tiene_hijos: false,
-            hijos_menores_12: 0,
+            hijos_menores_12: false,
             calle: "",
             numero_exterior: "",
             numero_interior: "",

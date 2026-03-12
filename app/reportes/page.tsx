@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, Suspense } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Download, BarChart, Loader2, Search, SlidersHorizontal, X, FileType } from 'lucide-react'
@@ -45,7 +45,7 @@ const ALL_WORKER_FIELDS = [
     { id: 'clave_elector', label: 'CLAVE ELECTOR' },
 ]
 
-export default function ReportesPage() {
+function ReportesContent() {
     const searchParams = useSearchParams()
     
     const [workers, setWorkers] = useState<Worker[]>([])
@@ -182,176 +182,174 @@ export default function ReportesPage() {
     const totalPages = Math.ceil(totalCount / 15)
 
     return (
-        <AppLayout title="Reportes" subtitle="Generación de Informes Personalizados">
-            <div className="space-y-6">
-                {/* Header & Main Actions */}
-                <div className="flex flex-col lg:flex-row gap-4 items-center justify-between glass-card p-6">
-                    <div className="flex items-center gap-4 w-full lg:max-w-md">
-                        <div className="relative flex-1 group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-zinc-900 transition-colors" />
-                            <Input
-                                placeholder="Filtrar por nombre, CURP..."
-                                className="pl-11 h-12 rounded-2xl border-zinc-200 bg-white"
-                                value={search}
-                                onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                            />
-                        </div>
-                        <Button
-                            variant={showFilters ? "secondary" : "outline"}
-                            className="rounded-2xl h-12 w-12 p-0 border-zinc-200 shrink-0"
-                            onClick={() => setShowFilters(!showFilters)}
-                        >
-                            <SlidersHorizontal className="h-4 w-4" />
-                        </Button>
+        <div className="space-y-6">
+            {/* Header & Main Actions */}
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between glass-card p-6">
+                <div className="flex items-center gap-4 w-full lg:max-w-md">
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-zinc-900 transition-colors" />
+                        <Input
+                            placeholder="Filtrar por nombre, CURP..."
+                            className="pl-11 h-12 rounded-2xl border-zinc-200 bg-white"
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+                        />
                     </div>
-
                     <Button
-                        onClick={() => setIsDialogOpen(true)}
-                        disabled={totalCount === 0 || isGenerating}
-                        className="rounded-2xl h-12 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-950 px-8 font-bold gap-2 w-full lg:w-auto ring-offset-background transition-all hover:scale-[1.02]"
+                        variant={showFilters ? "secondary" : "outline"}
+                        className="rounded-2xl h-12 w-12 p-0 border-zinc-200 shrink-0"
+                        onClick={() => setShowFilters(!showFilters)}
                     >
-                        {isGenerating ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <FileType className="h-4 w-4" />
-                        )}
-                        Generar Reporte PDF ({totalCount})
+                        <SlidersHorizontal className="h-4 w-4" />
                     </Button>
                 </div>
 
-                {/* Advanced Filters */}
-                <AnimatePresence>
-                    {showFilters && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                        >
-                            <Card className="rounded-[2.5rem] border-zinc-200 shadow-sm mb-6">
-                                <CardContent className="p-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Adscripción</Label>
-                                            <Select value={selectedAdscripcion} onValueChange={(v) => { setSelectedAdscripcion(v); setPage(1) }}>
-                                                <SelectTrigger className="h-12 rounded-xl border-zinc-200">
-                                                    <SelectValue placeholder="Todas" />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-xl">
-                                                    <SelectItem value="all">Todas</SelectItem>
-                                                    {adscripciones.map(a => (
-                                                        <SelectItem key={a.id} value={a.id}>{a.nombre}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                <Button
+                    onClick={() => setIsDialogOpen(true)}
+                    disabled={totalCount === 0 || isGenerating}
+                    className="rounded-2xl h-12 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-950 px-8 font-bold gap-2 w-full lg:w-auto ring-offset-background transition-all hover:scale-[1.02]"
+                >
+                    {isGenerating ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <FileType className="h-4 w-4" />
+                    )}
+                    Generar Reporte PDF ({totalCount})
+                </Button>
+            </div>
 
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Municipio</Label>
-                                            <Select value={selectedMunicipio} onValueChange={(v) => { setSelectedMunicipio(v); setPage(1) }}>
-                                                <SelectTrigger className="h-12 rounded-xl border-zinc-200">
-                                                    <SelectValue placeholder="Todos" />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-xl">
-                                                    <SelectItem value="all">Todos</SelectItem>
-                                                    <SelectItem value="AGUASCALIENTES">Aguascalientes</SelectItem>
-                                                    <SelectItem value="ASIENTOS">Asientos</SelectItem>
-                                                    <SelectItem value="CALVILLO">Calvillo</SelectItem>
-                                                    <SelectItem value="COSIO">Cosío</SelectItem>
-                                                    <SelectItem value="JESUS MARIA">Jesús María</SelectItem>
-                                                    <SelectItem value="PABELLON DE ARTEAGA">Pabellón de Arteaga</SelectItem>
-                                                    <SelectItem value="RINCON DE ROMOS">Rincón de Romos</SelectItem>
-                                                    <SelectItem value="SAN JOSE DE GRACIA">San José de Gracia</SelectItem>
-                                                    <SelectItem value="TEPEZALA">Tepezalá</SelectItem>
-                                                    <SelectItem value="EL LLANO">El Llano</SelectItem>
-                                                    <SelectItem value="SAN FRANCISCO DE LOS ROMO">San Francisco de los Romo</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+            {/* Advanced Filters */}
+            <AnimatePresence>
+                {showFilters && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <Card className="rounded-[2.5rem] border-zinc-200 shadow-sm mb-6">
+                            <CardContent className="p-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Adscripción</Label>
+                                        <Select value={selectedAdscripcion} onValueChange={(v) => { setSelectedAdscripcion(v); setPage(1) }}>
+                                            <SelectTrigger className="h-12 rounded-xl border-zinc-200">
+                                                <SelectValue placeholder="Todas" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl">
+                                                <SelectItem value="all">Todas</SelectItem>
+                                                {adscripciones.map(a => (
+                                                    <SelectItem key={a.id} value={a.id}>{a.nombre}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Estatus</Label>
-                                            <Select value={selectedEstatus} onValueChange={(v) => { setSelectedEstatus(v); setPage(1) }}>
-                                                <SelectTrigger className="h-12 rounded-xl border-zinc-200">
-                                                    <SelectValue placeholder="Cualquiera" />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-xl">
-                                                    <SelectItem value="all">Cualquiera</SelectItem>
-                                                    <SelectItem value="activo">Activo</SelectItem>
-                                                    <SelectItem value="jubilado">Jubilado</SelectItem>
-                                                    <SelectItem value="inactivo">Inactivo</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Municipio</Label>
+                                        <Select value={selectedMunicipio} onValueChange={(v) => { setSelectedMunicipio(v); setPage(1) }}>
+                                            <SelectTrigger className="h-12 rounded-xl border-zinc-200">
+                                                <SelectValue placeholder="Todos" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl">
+                                                <SelectItem value="all">Todos</SelectItem>
+                                                <SelectItem value="AGUASCALIENTES">Aguascalientes</SelectItem>
+                                                <SelectItem value="ASIENTOS">Asientos</SelectItem>
+                                                <SelectItem value="CALVILLO">Calvillo</SelectItem>
+                                                <SelectItem value="COSIO">Cosío</SelectItem>
+                                                <SelectItem value="JESUS MARIA">Jesús María</SelectItem>
+                                                <SelectItem value="PABELLON DE ARTEAGA">Pabellón de Arteaga</SelectItem>
+                                                <SelectItem value="RINCON DE ROMOS">Rincón de Romos</SelectItem>
+                                                <SelectItem value="SAN JOSE DE GRACIA">San José de Gracia</SelectItem>
+                                                <SelectItem value="TEPEZALA">Tepezalá</SelectItem>
+                                                <SelectItem value="EL LLANO">El Llano</SelectItem>
+                                                <SelectItem value="SAN FRANCISCO DE LOS ROMO">San Francisco de los Romo</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Género</Label>
-                                            <Select value={selectedSexo} onValueChange={(v) => { setSelectedSexo(v); setPage(1) }}>
-                                                <SelectTrigger className="h-12 rounded-xl border-zinc-200">
-                                                    <SelectValue placeholder="Todos" />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-xl">
-                                                    <SelectItem value="all">Todos</SelectItem>
-                                                    <SelectItem value="Masculino">Masculino</SelectItem>
-                                                    <SelectItem value="Femenino">Femenino</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Estatus</Label>
+                                        <Select value={selectedEstatus} onValueChange={(v) => { setSelectedEstatus(v); setPage(1) }}>
+                                            <SelectTrigger className="h-12 rounded-xl border-zinc-200">
+                                                <SelectValue placeholder="Cualquiera" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl">
+                                                <SelectItem value="all">Cualquiera</SelectItem>
+                                                <SelectItem value="activo">Activo</SelectItem>
+                                                <SelectItem value="jubilado">Jubilado</SelectItem>
+                                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                                        <div className="flex flex-col justify-end gap-2 px-2">
-                                            <div className="flex items-center space-x-3 mb-1">
-                                                <Checkbox
-                                                    id="hijos"
-                                                    checked={hasHijos}
-                                                    onCheckedChange={(v) => { setHasHijos(!!v); setPage(1) }}
-                                                    className="h-5 w-5 rounded-md"
-                                                />
-                                                <Label htmlFor="hijos" className="font-bold cursor-pointer text-sm">Hijos menores de 12</Label>
-                                            </div>
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Género</Label>
+                                        <Select value={selectedSexo} onValueChange={(v) => { setSelectedSexo(v); setPage(1) }}>
+                                            <SelectTrigger className="h-12 rounded-xl border-zinc-200">
+                                                <SelectValue placeholder="Todos" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl">
+                                                <SelectItem value="all">Todos</SelectItem>
+                                                <SelectItem value="Masculino">Masculino</SelectItem>
+                                                <SelectItem value="Femenino">Femenino</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                                        <div className="flex items-end justify-end">
-                                            <Button
-                                                variant="ghost"
-                                                onClick={clearFilters}
-                                                className="h-12 rounded-xl px-4 text-zinc-500 hover:text-zinc-900 gap-2 font-bold text-xs uppercase tracking-widest"
-                                            >
-                                                <X className="h-4 w-4" /> Limpiar
-                                            </Button>
+                                    <div className="flex flex-col justify-end gap-2 px-2">
+                                        <div className="flex items-center space-x-3 mb-1">
+                                            <Checkbox
+                                                id="hijos"
+                                                checked={hasHijos}
+                                                onCheckedChange={(v) => { setHasHijos(!!v); setPage(1) }}
+                                                className="h-5 w-5 rounded-md"
+                                            />
+                                            <Label htmlFor="hijos" className="font-bold cursor-pointer text-sm">Hijos menores de 12</Label>
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
-                {/* Preview Table */}
-                <div className="relative">
-                    {isLoading && (
-                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-[1px] rounded-[3rem]">
-                            <Loader2 className="h-8 w-8 animate-spin text-zinc-900" />
-                        </div>
-                    )}
-                    <WorkerTable
-                        workers={workers}
-                        onDelete={() => { }} // No delete in reports view
-                        currentPage={page}
-                        totalPages={totalPages}
-                        onPageChange={(p) => setPage(p)}
-                        sortCol={sortCol}
-                        sortOrder={sortOrder}
-                        searchTerm={search}
-                        onSort={(col) => {
-                            if (sortCol === col) {
-                                setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-                            } else {
-                                setSortCol(col)
-                                setSortOrder('asc')
-                            }
-                        }}
-                    />
-                </div>
+                                    <div className="flex items-end justify-end">
+                                        <Button
+                                            variant="ghost"
+                                            onClick={clearFilters}
+                                            className="h-12 rounded-xl px-4 text-zinc-500 hover:text-zinc-900 gap-2 font-bold text-xs uppercase tracking-widest"
+                                        >
+                                            <X className="h-4 w-4" /> Limpiar
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Preview Table */}
+            <div className="relative">
+                {isLoading && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-[1px] rounded-[3rem]">
+                        <Loader2 className="h-8 w-8 animate-spin text-zinc-900" />
+                    </div>
+                )}
+                <WorkerTable
+                    workers={workers}
+                    onDelete={() => { }} // No delete in reports view
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={(p) => setPage(p)}
+                    sortCol={sortCol}
+                    sortOrder={sortOrder}
+                    searchTerm={search}
+                    onSort={(col) => {
+                        if (sortCol === col) {
+                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+                        } else {
+                            setSortCol(col)
+                            setSortOrder('asc')
+                        }
+                    }}
+                />
             </div>
 
             {/* Field Selection Modal */}
@@ -416,6 +414,20 @@ export default function ReportesPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+        </div>
+    )
+}
+
+export default function ReportesPage() {
+    return (
+        <AppLayout title="Reportes" subtitle="Generación de Informes Personalizados">
+            <Suspense fallback={
+                <div className="flex items-center justify-center p-20">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                </div>
+            }>
+                <ReportesContent />
+            </Suspense>
         </AppLayout>
     )
 }

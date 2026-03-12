@@ -72,6 +72,7 @@ export async function getDashboardStats() {
         console.error(error)
         return {
             total: 0, activos: 0, jubilados: 0, conHijos: 0,
+            papas: 0, mamas: 0,
             stats: { adscDistrib: [], adscDetailed: [] }
         }
     }
