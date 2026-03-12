@@ -323,7 +323,7 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                                                         ) : (
                                                             <span>Seleccionar fecha</span>
                                                         )}
-                                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                        <CalendarIcon className="ml-auto h-4 w-4 text-muted-foreground" />
                                                     </Button>
                                                 </FormControl>
                                             </PopoverTrigger>
@@ -500,7 +500,7 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                                             </FormControl>
                                             <div className="space-y-1 leading-none">
                                                 <FormLabel>¿Tiene hijos?</FormLabel>
-                                                <FormDescription>Marcar si el trabajador tiene hijos dependientes.</FormDescription>
+                                                <FormDescription className="text-muted-foreground font-medium">Marcar si el trabajador tiene hijos dependientes.</FormDescription>
                                             </div>
                                         </FormItem>
                                     )}

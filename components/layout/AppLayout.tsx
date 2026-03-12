@@ -215,7 +215,7 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
                                 transition={{ delay: 0.1 }}
                                 className="min-w-0"
                             >
-                                <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground/60 uppercase mb-0.5">
+                                <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-0.5">
                                     <span className="hover:text-primary cursor-default transition-colors hidden xs:inline">SUTEMA</span>
                                     <span className="opacity-30 hidden xs:inline">/</span>
                                     <span className="text-primary truncate">{title}</span>

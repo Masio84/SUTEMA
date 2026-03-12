@@ -286,16 +286,16 @@ export default function ConfigPageClient() {
                                             <p className="text-[11px] text-muted-foreground text-center py-4 italic">No hay historial disponible.</p>
                                         ) : (
                                             activityLogs.map((log, lIdx) => (
-                                                <div key={log.id || lIdx} className="bg-background/50 border border-border/50 p-3 rounded-2xl space-y-1">
+                                                <div key={log.id || lIdx} className="bg-muted/40 border border-border/50 p-3 rounded-2xl space-y-1">
                                                     <div className="flex justify-between items-start">
                                                         <span className="text-[11px] font-bold text-primary leading-tight">{log.accion}</span>
-                                                        <span className="text-[9px] text-muted-foreground flex items-center gap-1 font-medium bg-muted/50 px-2 py-0.5 rounded-full shrink-0">
+                                                        <span className="text-[9px] text-muted-foreground flex items-center gap-1 font-medium bg-background px-2 py-0.5 rounded-full shrink-0 border border-border/10">
                                                             <Clock className="h-2.5 w-2.5" />
                                                             {log.fecha ? format(new Date(log.fecha), 'HH:mm', { locale: es }) : ''}
                                                         </span>
                                                     </div>
                                                     <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{log.detalles}</p>
-                                                    <p className="text-[9px] text-muted-foreground/60 font-medium">
+                                                    <p className="text-[9px] text-muted-foreground/80 font-medium">
                                                         {log.fecha ? format(new Date(log.fecha), 'dd MMM yyyy', { locale: es }) : ''}
                                                     </p>
                                                 </div>
@@ -345,10 +345,10 @@ export default function ConfigPageClient() {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent border-border">
-                                        <TableHead className="px-6 font-black uppercase text-[9px] tracking-widest text-muted-foreground py-4">Usuario</TableHead>
-                                        <TableHead className="font-black uppercase text-[9px] tracking-widest text-muted-foreground">Rol</TableHead>
-                                        <TableHead className="font-black uppercase text-[9px] tracking-widest text-muted-foreground">Estatus</TableHead>
-                                        <TableHead className="px-6 text-right font-black uppercase text-[9px] tracking-widest text-muted-foreground">Acciones</TableHead>
+                                        <TableHead className="px-6 font-black uppercase text-[9px] tracking-widest text-muted-foreground/90 py-4">Usuario</TableHead>
+                                        <TableHead className="font-black uppercase text-[9px] tracking-widest text-muted-foreground/90">Rol</TableHead>
+                                        <TableHead className="font-black uppercase text-[9px] tracking-widest text-muted-foreground/90">Estatus</TableHead>
+                                        <TableHead className="px-6 text-right font-black uppercase text-[9px] tracking-widest text-muted-foreground/90">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

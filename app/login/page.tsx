@@ -68,7 +68,7 @@ export default function LoginPage() {
                     </p>
                 </motion.div>
 
-                <div className="absolute bottom-8 text-center w-full text-primary-400/50 text-[10px] uppercase tracking-widest font-bold">
+                <div className="absolute bottom-8 text-center w-full text-primary-300 text-[10px] uppercase tracking-widest font-black">
                     © {new Date().getFullYear()} SUTEMA ISSEA. Todos los derechos reservados.
                 </div>
             </div>
@@ -115,7 +115,7 @@ export default function LoginPage() {
                         <div className="space-y-2">
                             <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Usuario Institucional</Label>
                             <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50" />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/70" />
                                 <Input
                                     id="email"
                                     type="email"
@@ -150,8 +150,8 @@ export default function LoginPage() {
                                     ¿Olvidó su contraseña?
                                 </button>
                             </div>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50" />
+                            <div className="relative flex items-center">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/70" />
                                 <Input
                                     id="password"
                                     type={showPassword ? "text" : "password"}
@@ -168,7 +168,7 @@ export default function LoginPage() {
                                     onMouseLeave={() => setShowPassword(false)}
                                     onTouchStart={() => setShowPassword(true)}
                                     onTouchEnd={() => setShowPassword(false)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-primary transition-colors cursor-pointer select-none outline-none"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-primary transition-colors cursor-pointer select-none outline-none"
                                     title="Mantén presionado para ver"
                                 >
                                     {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}

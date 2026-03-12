@@ -86,7 +86,7 @@ const renderActiveShape = (props: any) => {
             <text x={cx} y={cy - 18} textAnchor="middle" className="fill-foreground" style={{ fontSize: 28, fontWeight: 900, fill: 'currentColor' }}>
                 {d.total}
             </text>
-            <text x={cx} y={cy + 8} textAnchor="middle" style={{ fontSize: 11, fontWeight: 700, fill: '#888', textTransform: 'uppercase', letterSpacing: 2 }}>
+            <text x={cx} y={cy + 8} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2 }}>
                 TRABAJADORES
             </text>
             <text x={cx} y={cy + 28} textAnchor="middle" style={{ fontSize: 12, fontWeight: 600, fill: 'currentColor' }}>
@@ -99,8 +99,8 @@ const renderActiveShape = (props: any) => {
 // ── Stat pill ──────────────────────────────────────────────────
 function Pill({ label, value, color }: { label: string; value: number; color: string }) {
     return (
-        <div className={`flex items-center justify-between px-3 py-2 rounded-xl ${color}`}>
-            <span className="text-[10px] font-black uppercase tracking-wider opacity-80">{label}</span>
+        <div className={`flex items-center justify-between px-3 py-2 rounded-xl border border-current/10 ${color}`}>
+            <span className="text-[10px] font-black uppercase tracking-wider opacity-90">{label}</span>
             <span className="text-base font-black">{value}</span>
         </div>
     )
@@ -117,13 +117,15 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
     const incompletePercent = stats.total > 0 ? Math.round((incompleteCount / stats.total) * 100) : 0
 
     const metricCards = [
-        { title: "Total Registrados", value: stats.total, icon: Users, color: "text-primary-900 dark:text-white" },
-        { title: "Activos", value: stats.activos, icon: UserCheck, color: "text-primary-800 dark:text-primary-400" },
-        { title: "Con Hijos < 12", value: stats.conHijos, icon: Baby, color: "text-primary-600 dark:text-primary-200" },
+        { title: "Total Registrados", value: stats.total ?? 0, icon: Users, color: "from-primary to-slate-950", iconBg: "bg-primary", glow: "bg-primary/10" },
+        { title: "Activos", value: stats.activos ?? 0, icon: UserCheck, color: "from-blue-600 to-blue-950", iconBg: "bg-blue-600", glow: "bg-blue-500/10" },
+        { title: "Con Hijos < 12", value: stats.conHijos ?? 0, icon: Baby, color: "from-indigo-600 to-indigo-950", iconBg: "bg-indigo-600", glow: "bg-indigo-500/10" },
         {
-            title: "Incompletos", value: incompleteCount, icon: AlertTriangle,
-            color: incompleteCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400",
-            highlight: incompleteCount > 0
+            title: "Incompletos", value: incompleteCount ?? 0, icon: AlertTriangle,
+            color: (incompleteCount ?? 0) > 0 ? "from-red-600 to-red-950" : "from-emerald-600 to-emerald-950",
+            iconBg: (incompleteCount ?? 0) > 0 ? "bg-red-600" : "bg-emerald-600",
+            glow: (incompleteCount ?? 0) > 0 ? "bg-red-500/10" : "bg-emerald-500/10",
+            highlight: (incompleteCount ?? 0) > 0
         },
     ]
 
@@ -149,16 +151,42 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {metricCards.map((card, i) => (
                     <motion.div key={i} variants={item}>
-                        <Card className={`glass-card hover:-translate-y-0.5 transition-transform ${card.color} ${card.highlight ? 'border-amber-300 dark:border-amber-700' : ''}`}>
-                            <CardContent className="p-4 flex items-center justify-between">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-foreground/60 mb-0.5 truncate">{card.title}</p>
-                                    <h3 className="text-3xl font-black tracking-tighter truncate">{card.value}</h3>
+                        <Card className={`relative overflow-hidden border-2 transition-all duration-300 hover:shadow-md ${
+                            card.highlight ? 'border-red-200 bg-red-50/30' : 'border-slate-200 bg-white'
+                        }`}>
+                            <CardContent className="p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                    <p className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-500">
+                                        {card.title}
+                                    </p>
+                                    <div className={`p-2.5 rounded-xl ${card.iconBg} text-white shadow-md`}>
+                                        <card.icon className="h-5 w-5" />
+                                    </div>
                                 </div>
-                                <div className={`p-2.5 rounded-xl ${card.highlight ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-200 dark:border-amber-800' : 'bg-primary-900/5 dark:bg-primary-100/10 border-primary-900/10 dark:border-white/10'} border shrink-0 ml-3`}>
-                                    <card.icon className="h-5 w-5" />
+                                <div className="relative group/num">
+                                    {/* Subtle Glow background */}
+                                    <div className={`absolute -inset-4 rounded-full blur-2xl opacity-0 group-hover/num:opacity-100 transition-opacity duration-500 ${card.glow}`} />
+                                    
+                                    <div className="relative flex items-baseline gap-2">
+                                        <motion.h3 
+                                            initial={{ scale: 0.8, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                                            className={`text-6xl font-black tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-br ${card.color} drop-shadow-sm select-none`}
+                                        >
+                                            {String(card.value)}
+                                        </motion.h3>
+                                        {card.highlight && (
+                                            <span className="text-[10px] font-black text-red-600 bg-red-100 px-2 py-0.5 rounded-full uppercase self-center shadow-sm">
+                                                Revisar
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </CardContent>
+                            
+                            {/* Subtle accent line at the bottom */}
+                            <div className={`absolute bottom-0 left-0 right-0 h-1 ${card.iconBg} opacity-50`} />
                         </Card>
                     </motion.div>
                 ))}
@@ -271,10 +299,10 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
                                                 <span className="ml-auto text-[10px] font-black text-muted-foreground">{activeAdsc.total} trabajadores</span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2">
-                                                <Pill label="Activos" value={activeAdsc.activos} color="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" />
-                                                <Pill label="Jubilados" value={activeAdsc.jubilados} color="bg-blue-500/10 text-blue-700 dark:text-blue-400" />
-                                                <Pill label="Inactivos" value={activeAdsc.inactivos} color="bg-amber-500/10 text-amber-700 dark:text-amber-400" />
-                                                <Pill label="Bajas" value={activeAdsc.bajas} color="bg-red-500/10 text-red-700 dark:text-red-400" />
+                                                <Pill label="Activos" value={activeAdsc.activos} color="bg-emerald-100/50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400" />
+                                                <Pill label="Jubilados" value={activeAdsc.jubilados} color="bg-blue-100/50 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400" />
+                                                <Pill label="Inactivos" value={activeAdsc.inactivos} color="bg-amber-100/50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400" />
+                                                <Pill label="Bajas" value={activeAdsc.bajas} color="bg-red-100/50 text-red-800 dark:bg-red-500/10 dark:text-red-400" />
                                             </div>
                                         </div>
                                     )}

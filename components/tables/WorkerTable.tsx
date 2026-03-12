@@ -112,7 +112,7 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
 
     const Header = ({ label, col, sortable = true }: { label: string, col: string, sortable?: boolean }) => (
         <TableHead
-            className={`font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 ${sortable ? 'cursor-pointer hover:text-foreground transition-colors' : ''}`}
+            className={`font-black uppercase tracking-widest text-[9px] text-muted-foreground/90 py-3 px-4 ${sortable ? 'cursor-pointer hover:text-foreground transition-colors' : ''}`}
             onClick={() => sortable && onSort(col)}
         >
             <div className="flex items-center gap-1">
@@ -125,16 +125,16 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
         <div className="space-y-4">
             <div id="workers-print-area" className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
                 <Table>
-                    <TableHeader className="bg-primary/5 dark:bg-primary-900/20 border-b border-border">
+                    <TableHeader className="bg-primary/5 dark:bg-primary-900/40 border-b border-border">
                         <TableRow className="hover:bg-transparent border-border italic">
                             <Header label="Nombre Completo" col="nombre" />
-                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 hidden md:table-cell">CURP</TableHead>
-                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 hidden lg:table-cell">Municipio</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground/90 py-3 px-4 hidden md:table-cell">CURP</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground/90 py-3 px-4 hidden lg:table-cell">Municipio</TableHead>
                             <Header label="Adscripción" col="adscripcion_id" />
-                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground py-3 px-4 hidden sm:table-cell text-center">Hijos</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[9px] text-muted-foreground/90 py-3 px-4 hidden sm:table-cell text-center">Hijos</TableHead>
                             <Header label="Antigüedad" col="fecha_ingreso" />
                             <Header label="Estatus" col="estatus" />
-                            <TableHead className="w-[80px] text-right font-black uppercase tracking-widest text-[9px] text-muted-foreground pr-4">Acciones</TableHead>
+                            <TableHead className="w-[80px] text-right font-black uppercase tracking-widest text-[9px] text-muted-foreground/90 pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
