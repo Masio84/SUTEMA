@@ -516,18 +516,17 @@ export default function WorkerForm({ initialData, adscripciones, onSubmit, isLoa
                                                 control={form.control}
                                                 name="hijos_menores_12"
                                                 render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>No. Hijos menores de 12 años</FormLabel>
+                                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-2xl border p-4">
                                                         <FormControl>
-                                                            <Input
-                                                                className="rounded-xl"
-                                                                type="number"
-                                                                min={0}
-                                                                {...field}
-                                                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                                            <Checkbox
+                                                                checked={field.value}
+                                                                onCheckedChange={field.onChange}
                                                             />
                                                         </FormControl>
-                                                        <FormMessage />
+                                                        <div className="space-y-1 leading-none">
+                                                            <FormLabel>¿Tiene hijos menores de 12 años?</FormLabel>
+                                                            <FormDescription className="text-muted-foreground font-medium">Marcar si el trabajador tiene hijos en este rango de edad.</FormDescription>
+                                                        </div>
                                                     </FormItem>
                                                 )}
                                             />

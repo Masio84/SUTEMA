@@ -21,7 +21,7 @@ export const workerSchema = z.object({
 
     // Información Familiar
     tiene_hijos: z.boolean().default(false),
-    hijos_menores_12: z.number().min(0).default(0),
+    hijos_menores_12: z.boolean().default(false),
 
     // Dirección
     calle: z.string().min(1, "Calle es requerida"),

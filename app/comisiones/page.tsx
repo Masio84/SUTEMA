@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -19,17 +20,31 @@ import { es } from 'date-fns/locale'
 import { DateRange } from 'react-day-picker'
 import { getUsedDays, registerComision } from '@/app/actions/comisiones'
 
-const AUTORIDADES = [
-    { id: '1', nombre: 'LIC. OBED JESSE MUÑOZ CASTILLO', cargo: 'SUBDIRECTOR DE CAPITAL HUMANO DEL ISSEA' },
-    { id: '2', nombre: 'DR. JAIME REYNA CRUZ', cargo: 'DIRECTOR DEL HOSPITAL DE LA MUJER' },
-    { id: '3', nombre: 'DR. RUBÉN GALAVIZ TRISTÁN', cargo: 'SECRETARIO DE SALUD DEL ESTADO DE AGUASCALIENTES' }
-]
+// Basic placeholders while DB loads
+import { 
+  getAutoridades, 
+  createAutoridad, 
+  deleteAutoridad 
+} from '@/app/actions/autoridades'
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from '@/components/ui/dialog'
+import { PlusCircle, Trash2, Settings2 } from 'lucide-react'
+import { getAdscripciones } from '@/app/actions/workers'
 
-const COPIAS_DEFAULT = [
-    'Dr. Jaime Reyna Cruz.- Director del Hospital de la Mujer.',
-    'Lic. Jessica Marlene Mendez Labastida.- Jefa de Recursos Humanos del Hospital de la Mujer.',
-    'Brenda Del Rocio Azpeitia Ramirez.- Supervisora Turno Nocturno B'
-]
+interface Autoridad {
+    id: string
+    nombre: string
+    cargo: string
+    adscripcion_id?: any
+    unidad_id?: any
+    copias: string[]
+}
 
 export default function ComisionesPage() {
     // Form State
@@ -43,7 +58,7 @@ export default function ComisionesPage() {
     const [dateRange, setDateRange] = useState<DateRange | undefined>()
     const [fechas, setFechas] = useState('')
     const [selectedAutoridad, setSelectedAutoridad] = useState('')
-    const [ccsText, setCcsText] = useState(COPIAS_DEFAULT.join('\n'))
+    const [ccsText, setCcsText] = useState('')
     
     const [copiaTrabajador, setCopiaTrabajador] = useState(true)
     const [copiaArchivo, setCopiaArchivo] = useState(true)
@@ -51,8 +66,26 @@ export default function ComisionesPage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
     
+    const [dbAutoridades, setDbAutoridades] = useState<Autoridad[]>([])
+    const [allAdscripciones, setAllAdscripciones] = useState<any[]>([])
+    const [isAutoPopulating, setIsAutoPopulating] = useState(false)
+    
+    // New Authority Form
+    const [isManagingAutoridades, setIsManagingAutoridades] = useState(false)
+    const [newAuth, setNewAuth] = useState({
+        nombre: '', cargo: '', adscripcion_id: '', copias: ''
+    })
+
     const [usedDays, setUsedDays] = useState(0)
     const [requestedDays, setRequestedDays] = useState(0)
+
+    // Initialization
+    useEffect(() => {
+        Promise.all([getAutoridades(), getAdscripciones()]).then(([auths, ads]) => {
+            setDbAutoridades(auths as Autoridad[])
+            setAllAdscripciones(ads as any[])
+        })
+    }, [])
 
     // Format dates to Spanish string automatically
     useEffect(() => {
@@ -89,14 +122,32 @@ export default function ComisionesPage() {
         }
     }, [dateRange])
 
-    // Fetch used days when worker selected
+    // Fetch used days when worker selected + AUTO-SELECT AUTHORITY
     useEffect(() => {
         if (selectedWorker) {
             getUsedDays(selectedWorker.id, new Date().getFullYear()).then(setUsedDays)
+            
+            // Automation Logic: Search for an authority matching the worker's adscripcion or unidad
+            const match = dbAutoridades.find(a => 
+                (a.unidad_id && String(a.unidad_id) === String(selectedWorker.unidad_id)) || 
+                (a.adscripcion_id && String(a.adscripcion_id) === String(selectedWorker.adscripcion_id))
+            )
+
+            if (match) {
+                setSelectedAutoridad(match.id)
+                if (match.copias && match.copias.length > 0) {
+                    setCcsText(match.copias.join('\n'))
+                } else {
+                    setCcsText('')
+                }
+                toast.info(`Autoridad detectada automáticamente: ${match.nombre}`)
+            }
         } else {
             setUsedDays(0)
+            setSelectedAutoridad('')
+            setCcsText('')
         }
-    }, [selectedWorker])
+    }, [selectedWorker, dbAutoridades])
 
     // Search effect
     useEffect(() => {
@@ -165,11 +216,11 @@ export default function ComisionesPage() {
 
         setIsGenerating(true)
         try {
-            const autoridad = AUTORIDADES.find(a => a.id === selectedAutoridad)
+            const autoridad = dbAutoridades.find(a => a.id === selectedAutoridad)
             if (!autoridad) throw new Error("Autoridad no encontrada")
 
             // Parse CCs
-            let copias = ccsText.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+            let copias = ccsText.split('\n').map((l: string) => l.trim()).filter((l: string) => l.length > 0)
             if (copiaTrabajador) {
                 copias.push(`C. ${selectedWorker.nombre} ${selectedWorker.apellido_paterno} ${selectedWorker.apellido_materno || ''}`.trim())
             }
@@ -185,7 +236,8 @@ export default function ComisionesPage() {
                 dirigidoA: autoridad.nombre,
                 cargoDirigidoA: autoridad.cargo,
                 copias: copias,
-                archivo: copiaArchivo
+                archivo: copiaArchivo,
+                sexo: selectedWorker.sexo
             })
 
             // Register in DB
@@ -233,9 +285,22 @@ export default function ComisionesPage() {
                         <div className="bg-primary/10 p-4 rounded-2xl">
                             <Briefcase className="h-8 w-8 text-primary" />
                         </div>
-                        <div>
-                            <h2 className="text-xl font-black">Licencia Sindical</h2>
-                            <p className="text-sm text-muted-foreground font-medium">Llene los datos a continuación para generar el documento de Word listo para imprimir.</p>
+                        <div className="flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black">Licencia Sindical</h2>
+                                    <p className="text-sm text-muted-foreground font-medium">Llene los datos a continuación para generar el documento oficial.</p>
+                                </div>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="rounded-xl border-dashed border-primary/30 hover:border-primary px-4 h-9 gap-2 text-xs font-bold transition-all"
+                                    onClick={() => setIsManagingAutoridades(true)}
+                                >
+                                    <Settings2 className="h-3.5 w-3.5" />
+                                    Gestionar Autoridades
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -244,7 +309,7 @@ export default function ComisionesPage() {
                         <div className="space-y-6">
                             
                             <div className="space-y-2 relative" ref={searchRef}>
-                                <Label className="text-[10px] uppercase font-black tracking-widest text-primary-900/60 dark:text-primary-200/60">Trabajador</Label>
+                                <Label className="text-[10px] uppercase font-black tracking-widest text-slate-500">Trabajador</Label>
                                 <div className="relative">
                                     <Input
                                         placeholder="Buscar por nombre o apellidos..."
@@ -283,7 +348,7 @@ export default function ComisionesPage() {
                             </div>
 
                             <div className="space-y-2 flex flex-col">
-                                <Label className="text-[10px] uppercase font-black tracking-widest text-primary-900/60 dark:text-primary-200/60">Fecha(s) de la Comisión</Label>
+                                <Label className="text-[10px] uppercase font-black tracking-widest text-slate-500">Fecha(s) de la Comisión</Label>
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -332,18 +397,18 @@ export default function ComisionesPage() {
                                 {fechas && (
                                     <div className="mt-4 p-4 bg-muted/50 rounded-xl border border-border space-y-3">
                                         <div>
-                                            <Label className="text-[9px] uppercase font-black tracking-tighter text-muted-foreground mb-1 block">Texto sugerido para el oficio:</Label>
+                                            <Label className="text-[9px] uppercase font-black tracking-tighter text-slate-500 mb-1 block">Texto sugerido para el oficio:</Label>
                                             <p className="text-sm font-bold italic text-primary">"...solicita del día {fechas}, con la finalidad..."</p>
                                         </div>
                                         
                                         <div className="pt-2 border-t border-border/50 flex justify-between items-end">
                                             <div>
-                                                <p className="text-[9px] uppercase font-black text-muted-foreground">Días solicitados</p>
+                                                <p className="text-[9px] uppercase font-black text-slate-500">Días solicitados</p>
                                                 <p className="text-xl font-black">{requestedDays} <span className="text-xs font-medium text-muted-foreground">días</span></p>
                                             </div>
                                             {selectedWorker && (
                                                 <div className="text-right">
-                                                    <p className="text-[9px] uppercase font-black text-muted-foreground">Disponibles (15 máx)</p>
+                                                    <p className="text-[9px] uppercase font-black text-slate-500">Disponibles (15 máx)</p>
                                                     <p className={`text-xl font-black ${usedDays + requestedDays > 15 ? 'text-destructive' : 'text-green-600'}`}>
                                                         {15 - usedDays} <span className="text-xs font-medium text-muted-foreground">días</span>
                                                     </p>
@@ -364,13 +429,32 @@ export default function ComisionesPage() {
                         <div className="space-y-6">
                             
                             <div className="space-y-2">
-                                <Label className="text-[10px] uppercase font-black tracking-widest text-primary-900/60 dark:text-primary-200/60">A quien va dirigido</Label>
+                                <Label className="text-[10px] uppercase font-black tracking-widest text-slate-500">A quien va dirigido</Label>
                                 <Select value={selectedAutoridad} onValueChange={setSelectedAutoridad}>
                                     <SelectTrigger className="h-11 rounded-xl border-border font-medium">
                                         <SelectValue placeholder="Seleccione la autoridad..." />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl border-border">
-                                        {AUTORIDADES.map(a => (
+                                        {dbAutoridades.length === 0 && (
+                                            <div className="p-4 flex flex-col items-center gap-3">
+                                                <p className="text-xs text-muted-foreground text-center font-medium">
+                                                    No hay autoridades registradas para esta unidad/área.
+                                                </p>
+                                                <Button 
+                                                    variant="secondary" 
+                                                    size="sm" 
+                                                    className="w-full text-[10px] font-black h-8 rounded-lg"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setIsManagingAutoridades(true);
+                                                    }}
+                                                >
+                                                    DAR DE ALTA AHORA
+                                                </Button>
+                                            </div>
+                                        )}
+                                        {dbAutoridades.map(a => (
                                             <SelectItem key={a.id} value={a.id} className="py-2 cursor-pointer">
                                                 <div className="flex flex-col text-left">
                                                     <span className="font-bold text-sm">{a.nombre}</span>
@@ -382,8 +466,123 @@ export default function ComisionesPage() {
                                 </Select>
                             </div>
 
+                            {/* Management Dialog */}
+                            <Dialog open={isManagingAutoridades} onOpenChange={setIsManagingAutoridades}>
+                                <DialogContent className="max-w-2xl rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
+                                    <DialogHeader className="p-6 bg-slate-50 border-b border-border">
+                                        <DialogTitle className="flex items-center gap-2 text-xl font-black">
+                                            <Settings2 className="h-5 w-5 text-primary" />
+                                            Gestionar Autoridades
+                                        </DialogTitle>
+                                    </DialogHeader>
+                                    
+                                    <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                                        {/* New Authority Form */}
+                                        <div className="grid grid-cols-2 gap-4 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                                            <div className="col-span-2 space-y-1">
+                                                <Label className="text-[10px] font-black uppercase">Nombre del Titular</Label>
+                                                <Input 
+                                                    placeholder="Ej. DR. JAIME REYNA CRUZ" 
+                                                    value={newAuth.nombre}
+                                                    onChange={e => setNewAuth({...newAuth, nombre: e.target.value})}
+                                                    className="rounded-xl h-10 border-border bg-white"
+                                                />
+                                            </div>
+                                            <div className="col-span-2 space-y-1">
+                                                <Label className="text-[10px] font-black uppercase">Cargo</Label>
+                                                <Input 
+                                                    placeholder="Ej. DIRECTOR DEL HOSPITAL DE LA MUJER" 
+                                                    value={newAuth.cargo}
+                                                    onChange={e => setNewAuth({...newAuth, cargo: e.target.value})}
+                                                    className="rounded-xl h-10 border-border bg-white"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-[10px] font-black uppercase">Vincular a Área</Label>
+                                                <Select value={newAuth.adscripcion_id} onValueChange={v => setNewAuth({...newAuth, adscripcion_id: v})}>
+                                                    <SelectTrigger className="h-10 rounded-xl bg-white"><SelectValue placeholder="Opcional..." /></SelectTrigger>
+                                                    <SelectContent className="rounded-xl">
+                                                        <SelectItem value="none">Sin vinculación</SelectItem>
+                                                        {allAdscripciones.map(a => <SelectItem key={a.id} value={a.id}>{a.nombre}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-[10px] font-black uppercase">Copias p/Oficio (CCs)</Label>
+                                                <Input 
+                                                    placeholder="Separar por comas..." 
+                                                    value={newAuth.copias}
+                                                    onChange={e => setNewAuth({...newAuth, copias: e.target.value})}
+                                                    className="rounded-xl h-10 border-border bg-white"
+                                                />
+                                            </div>
+                                            <Button 
+                                                className="col-span-2 rounded-xl h-11 font-bold mt-2 shadow-md"
+                                                onClick={async () => {
+                                                    if (!newAuth.nombre || !newAuth.cargo) {
+                                                        toast.error("Nombre y cargo son requeridos")
+                                                        return
+                                                    }
+                                                    const res = await createAutoridad({
+                                                        ...newAuth,
+                                                        adscripcion_id: newAuth.adscripcion_id === 'none' ? null : newAuth.adscripcion_id,
+                                                        copias: newAuth.copias.split(',').map(s => s.trim()).filter(s => s.length > 0)
+                                                    })
+                                                    if (res.success) {
+                                                        toast.success("Autoridad agregada")
+                                                        setNewAuth({nombre: '', cargo: '', adscripcion_id: '', copias: ''})
+                                                        const updated = await getAutoridades()
+                                                        setDbAutoridades(updated as Autoridad[])
+                                                    } else {
+                                                        toast.error(res.error)
+                                                    }
+                                                }}
+                                            >
+                                                <PlusCircle className="h-4 w-4 mr-2" /> Agregar Autoridad
+                                            </Button>
+                                        </div>
+
+                                        {/* List */}
+                                        <div className="space-y-3">
+                                            <h4 className="text-xs font-black uppercase text-slate-500 tracking-widest pl-1">Autoridades Registradas</h4>
+                                            {dbAutoridades.map(a => (
+                                                <div key={a.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card group hover:border-primary/30 transition-colors">
+                                                    <div>
+                                                        <p className="font-bold text-sm">{a.nombre}</p>
+                                                        <p className="text-[10px] text-muted-foreground uppercase">{a.cargo}</p>
+                                                        {a.adscripcion_id && (
+                                                            <Badge variant="outline" className="mt-2 text-[8px] h-4 bg-primary/5 text-primary border-primary/20">
+                                                                VINCULADO: {allAdscripciones.find(ads => ads.id === a.adscripcion_id)?.nombre || 'Area'}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                                        onClick={async () => {
+                                                            if (confirm("¿Eliminar esta autoridad?")) {
+                                                                await deleteAutoridad(a.id)
+                                                                const updated = await getAutoridades()
+                                                                setDbAutoridades(updated as Autoridad[])
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    <DialogFooter className="p-4 bg-slate-50 border-t border-border">
+                                        <Button variant="outline" className="rounded-xl px-8" onClick={() => setIsManagingAutoridades(false)}>Cerrar</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+
                             <div className="space-y-2">
-                                <Label className="text-[10px] uppercase font-black tracking-widest text-primary-900/60 dark:text-primary-200/60">Con Copia Para (C.c.p)</Label>
+                                <Label className="text-[10px] uppercase font-black tracking-widest text-slate-500">Con Copia Para (C.c.p)</Label>
                                 <textarea
                                     value={ccsText}
                                     onChange={(e) => setCcsText(e.target.value)}

@@ -121,7 +121,7 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                     ? form.fecha_ingreso
                     : new Date(form.fecha_ingreso ?? Date.now()),
                 tiene_hijos: !!form.tiene_hijos,
-                hijos_menores_12: form.tiene_hijos ? (Number(form.hijos_menores_12) || 0) : 0,
+                hijos_menores_12: form.tiene_hijos ? !!form.hijos_menores_12 : false,
             }
             const result = await updateWorker(workerId, payload as any)
             if (result?.error) {
@@ -381,19 +381,17 @@ export default function WorkerDetailPanel({ workerId, onClose, onSaved }: Worker
                                             </Label>
                                         </div>
                                         {form.tiene_hijos && (
-                                            <FieldRow
-                                                label="Hijos menores de 12"
-                                                isEditing={isEditing}
-                                                readValue={String(worker.hijos_menores_12 ? '1 o más' : '0')}
-                                                editNode={
-                                                    <Input
-                                                        type="number" min={0}
-                                                        value={Number(form.hijos_menores_12) || 0}
-                                                        onChange={e => setField('hijos_menores_12', parseInt(e.target.value) || 0)}
-                                                        className="h-9 rounded-xl mt-1"
-                                                    />
-                                                }
-                                            />
+                                            <div className="flex items-center gap-3 p-3 rounded-xl border border-border">
+                                                <Checkbox
+                                                    id="detail_hijos_12"
+                                                    checked={!!form.hijos_menores_12}
+                                                    onCheckedChange={v => setField('hijos_menores_12', !!v)}
+                                                    disabled={!isEditing}
+                                                />
+                                                <Label htmlFor="detail_hijos_12" className="font-semibold text-sm cursor-pointer leading-tight">
+                                                    ¿Hijos menores de 12 años?
+                                                </Label>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

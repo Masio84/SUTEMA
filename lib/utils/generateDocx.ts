@@ -25,7 +25,8 @@ export async function generateComisionDocx({
   dirigidoA,
   cargoDirigidoA,
   copias,
-  archivo
+  archivo,
+  sexo
 }: {
   trabajadorNombre: string
   fechaDocumento: string
@@ -34,7 +35,11 @@ export async function generateComisionDocx({
   cargoDirigidoA: string
   copias: string[]
   archivo: boolean
+  sexo?: string
 }): Promise<Blob> {
+
+  const isFemenino = sexo?.toLowerCase() === 'femenino'
+  const prepCompanero = isFemenino ? " la compañera " : " el compañero "
 
   // Formato C.c.p.
   const copiasText = []
@@ -149,7 +154,7 @@ export async function generateComisionDocx({
                               font: "Calibri"
                           }),
                           new TextRun({
-                              text: " para la compañera ",
+                              text: ` para${prepCompanero}`,
                               size: 22,
                               font: "Calibri"
                           }),

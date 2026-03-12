@@ -13,6 +13,15 @@ import {
 
 export function ThemeToggle() {
     const { setTheme, theme } = useTheme()
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) {
+        return <div className="h-9 w-9 border border-border/50 rounded-xl bg-background/50" />
+    }
 
     return (
         <DropdownMenu>

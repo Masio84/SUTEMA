@@ -37,7 +37,8 @@ export interface Worker {
     estatus: string
     fecha_ingreso: string
     municipio?: string
-    hijos_menores_12?: number
+    hijos_menores_12?: boolean
+    sexo?: string
 }
 
 interface WorkerTableProps {
@@ -175,9 +176,9 @@ export default function WorkerTable({ workers, onDelete, onPageChange, currentPa
                                         </div>
                                     </TableCell>
                                     <TableCell className="px-4 hidden sm:table-cell text-center">
-                                        {(worker.hijos_menores_12 || 0) > 0 ? (
-                                            <Badge variant="secondary" className="bg-purple-100/50 text-purple-700 border-transparent font-black px-1.5 py-0 h-4 text-[9px]">
-                                                {worker.hijos_menores_12}
+                                        {worker.hijos_menores_12 ? (
+                                            <Badge variant="secondary" className="bg-purple-100/50 text-purple-700 border-transparent font-black px-2 py-0 h-4 text-[9px]">
+                                                SÍ
                                             </Badge>
                                         ) : (
                                             <span className="text-muted-foreground opacity-20">—</span>
