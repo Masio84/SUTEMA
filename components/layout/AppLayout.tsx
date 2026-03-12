@@ -157,7 +157,7 @@ export default function AppLayout({ children, title, subtitle }: { children: Rea
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 bg-background transition-all duration-300">
-                <header className="h-16 bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
+                <header className="h-16 bg-background/90 backdrop-blur-md border-b border-border sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
                     <div className="flex items-center gap-4">
                         {/* Mobile Menu Button */}
                         <div className="md:hidden">

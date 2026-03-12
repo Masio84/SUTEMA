@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
     Users, UserCheck, Baby, BarChart2,
     PieChart as PieChartIcon, AlertTriangle, ArrowRight, CheckCircle2,
@@ -117,12 +118,12 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
     const incompletePercent = stats.total > 0 ? Math.round((incompleteCount / stats.total) * 100) : 0
 
     const metricCards = [
-        { title: "Total Registrados", value: stats.total ?? 0, icon: Users, color: "from-primary to-slate-950", iconBg: "bg-primary", glow: "bg-primary/10" },
-        { title: "Activos", value: stats.activos ?? 0, icon: UserCheck, color: "from-blue-600 to-blue-950", iconBg: "bg-blue-600", glow: "bg-blue-500/10" },
-        { title: "Con Hijos < 12", value: stats.conHijos ?? 0, icon: Baby, color: "from-indigo-600 to-indigo-950", iconBg: "bg-indigo-600", glow: "bg-indigo-500/10" },
+        { title: "Total Registrados", value: stats.total ?? 0, icon: Users, color: "from-primary to-slate-950 dark:to-primary/50", iconBg: "bg-primary", glow: "bg-primary/10" },
+        { title: "Activos", value: stats.activos ?? 0, icon: UserCheck, color: "from-blue-600 to-blue-950 dark:to-blue-400", iconBg: "bg-blue-600", glow: "bg-blue-500/10" },
+        { title: "Con Hijos < 12", value: stats.conHijos ?? 0, icon: Baby, color: "from-indigo-600 to-indigo-950 dark:to-indigo-400", iconBg: "bg-indigo-600", glow: "bg-indigo-500/10" },
         {
             title: "Incompletos", value: incompleteCount ?? 0, icon: AlertTriangle,
-            color: (incompleteCount ?? 0) > 0 ? "from-red-600 to-red-950" : "from-emerald-600 to-emerald-950",
+            color: (incompleteCount ?? 0) > 0 ? "from-red-600 to-red-950 dark:to-red-400" : "from-emerald-600 to-emerald-950 dark:to-emerald-400",
             iconBg: (incompleteCount ?? 0) > 0 ? "bg-red-600" : "bg-emerald-600",
             glow: (incompleteCount ?? 0) > 0 ? "bg-red-500/10" : "bg-emerald-500/10",
             highlight: (incompleteCount ?? 0) > 0
@@ -147,49 +148,123 @@ export default function DashboardClient({ stats, incompleteData }: DashboardClie
     return (
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
 
-            {/* ── Metric cards ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {metricCards.map((card, i) => (
-                    <motion.div key={i} variants={item}>
-                        <Card className={`relative overflow-hidden border-2 transition-all duration-300 hover:shadow-md ${
-                            card.highlight ? 'border-red-200 bg-red-50/30' : 'border-slate-200 bg-white'
-                        }`}>
-                            <CardContent className="p-6">
-                                <div className="flex justify-between items-start mb-4">
-                                    <p className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-500">
-                                        {card.title}
-                                    </p>
-                                    <div className={`p-2.5 rounded-xl ${card.iconBg} text-white shadow-md`}>
-                                        <card.icon className="h-5 w-5" />
+            {/* ── Summary Row (Replacing individual metric cards) ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Labor Status Overview */}
+                <motion.div variants={item} className="lg:col-span-2">
+                    <Card className="glass-card overflow-hidden h-full">
+                        <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <Users className="h-4 w-4 text-primary" /> Resumen de Población y Estatus
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-8 px-6 pb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                                {/* Total registrations */}
+                                <div className="flex flex-col justify-center items-center p-6 bg-primary/5 rounded-[2rem] border border-primary/10">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Registrados</p>
+                                    <h4 className="text-5xl font-black text-foreground drop-shadow-sm">{stats.total}</h4>
+                                    <div className="mt-4 p-2 bg-primary rounded-xl">
+                                        <Users className="h-5 w-5 text-white" />
                                     </div>
                                 </div>
-                                <div className="relative group/num">
-                                    {/* Subtle Glow background */}
-                                    <div className={`absolute -inset-4 rounded-full blur-2xl opacity-0 group-hover/num:opacity-100 transition-opacity duration-500 ${card.glow}`} />
-                                    
-                                    <div className="relative flex items-baseline gap-2">
-                                        <motion.h3 
-                                            initial={{ scale: 0.8, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                                            className={`text-6xl font-black tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-br ${card.color} drop-shadow-sm select-none`}
-                                        >
-                                            {String(card.value)}
-                                        </motion.h3>
-                                        {card.highlight && (
-                                            <span className="text-[10px] font-black text-red-600 bg-red-100 px-2 py-0.5 rounded-full uppercase self-center shadow-sm">
-                                                Revisar
-                                            </span>
-                                        )}
+
+                                {/* Status Chart */}
+                                <div className="h-[180px] w-full flex flex-col items-center">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={[
+                                                    { name: 'Activos', value: stats.activos },
+                                                    { name: 'Jubilados', value: stats.jubilados }
+                                                ]}
+                                                innerRadius={50}
+                                                outerRadius={70}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                <Cell fill={COLORS[0]} />
+                                                <Cell fill={COLORS[3]} />
+                                            </Pie>
+                                            <RechartsTooltip />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                    <div className="flex gap-4 mt-2">
+                                        <div className="flex items-center gap-1.5 text-[10px font-bold uppercase tracking-tight]">
+                                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[0] }} /> Activos ({stats.activos})
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-[10px font-bold uppercase tracking-tight]">
+                                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[3] }} /> Jubilados ({stats.jubilados})
+                                        </div>
                                     </div>
                                 </div>
-                            </CardContent>
-                            
-                            {/* Subtle accent line at the bottom */}
-                            <div className={`absolute bottom-0 left-0 right-0 h-1 ${card.iconBg} opacity-50`} />
-                        </Card>
-                    </motion.div>
-                ))}
+
+                                {/* Other metrics list */}
+                                <div className="flex flex-col justify-center space-y-4">
+                                    <div className="p-4 rounded-2xl bg-muted/50 border border-border flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                                            <Baby className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Con Hijos &lt; 12</p>
+                                            <p className="text-xl font-black">{stats.conHijos}</p>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-muted/50 border border-border flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${incompleteCount > 0 ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                                            <AlertTriangle className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Registros Incompletos</p>
+                                            <p className={`text-xl font-black ${incompleteCount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{incompleteCount}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* System Activity / Fast access */}
+                <motion.div variants={item}>
+                    <Card className="glass-card overflow-hidden h-full flex flex-col">
+                        <CardHeader className="pb-3 border-b border-border mx-5 px-0 pt-6">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-primary" /> Calidad de Datos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 px-6 pb-6 flex-1 flex flex-col justify-center">
+                            <div className="text-center space-y-4">
+                                <div className="relative inline-block">
+                                    <svg className="h-32 w-32">
+                                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-muted" />
+                                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" 
+                                            strokeDasharray={364.4} strokeDashoffset={364.4 - (364.4 * (stats.total - incompleteCount) / stats.total)}
+                                            className={`${incompleteCount > 0 ? 'text-amber-500' : 'text-emerald-500'} transition-all duration-1000`} 
+                                            strokeLinecap="round" 
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-2xl font-black">{Math.round(((stats.total - incompleteCount) / stats.total) * 100)}%</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Completitud</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs font-bold text-muted-foreground leading-relaxed">
+                                    {incompleteCount > 0 
+                                      ? `Existen ${incompleteCount} registros que requieren atención inmediata para completar el padrón.`
+                                      : '¡Excelente! Todos los registros del sistema están al 100% de completitud.'}
+                                </p>
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full rounded-xl font-black uppercase text-[10px] tracking-widest mt-2"
+                                    onClick={() => router.push('/consultas')}
+                                >
+                                    Ver Detalles <ArrowRight className="h-3 w-3 ml-2" />
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </div>
 
             {/* ── Charts row ── */}
